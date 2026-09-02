@@ -1,6 +1,22 @@
 import { db } from "@/lib/db";
 
-/** Shared data-access helpers for public pages (only published content). */
+/**
+ * Shared data-access helpers for public pages (only published content).
+ *
+ * Every public query is wrapped in `safeQuery` so a database hiccup
+ * (misconfigured DATABASE_URL, missing tables, provider cold start, etc.)
+ * degrades gracefully: list pages render with empty state (HTTP 200)
+ * instead of crashing with HTTP 500. Errors are logged to server logs.
+ */
+
+async function safeQuery<T>(label: string, fallback: T, fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    console.error(`[DB:${label}]`, error);
+    return fallback;
+  }
+}
 
 export const PORTFOLIO_SELECT = {
   id: true,
@@ -39,29 +55,35 @@ export const JOURNAL_SELECT = {
 } as const;
 
 export function getPublishedPortfolios(options?: { featuredOnly?: boolean; take?: number }) {
-  return db.portfolio.findMany({
-    where: {
-      published: true,
-      ...(options?.featuredOnly ? { featured: true } : {}),
-    },
-    select: PORTFOLIO_SELECT,
-    orderBy: [{ featured: "desc" }, { year: "desc" }, { createdAt: "desc" }],
-    ...(options?.take ? { take: options.take } : {}),
-  });
+  return safeQuery("portfolios", [], () =>
+    db.portfolio.findMany({
+      where: {
+        published: true,
+        ...(options?.featuredOnly ? { featured: true } : {}),
+      },
+      select: PORTFOLIO_SELECT,
+      orderBy: [{ featured: "desc" }, { year: "desc" }, { createdAt: "desc" }],
+      ...(options?.take ? { take: options.take } : {}),
+    })
+  );
 }
 
 export function getPortfolioBySlug(slug: string) {
-  return db.portfolio.findFirst({
-    where: { slug, published: true },
-    select: PORTFOLIO_SELECT,
-  });
+  return safeQuery("portfolio:slug", null, () =>
+    db.portfolio.findFirst({
+      where: { slug, published: true },
+      select: PORTFOLIO_SELECT,
+    })
+  );
 }
 
 export function getPortfolioCategories() {
-  return db.portfolioCategory.findMany({
-    orderBy: { name: "asc" },
-    include: { _count: { select: { portfolios: { where: { published: true } } } } },
-  });
+  return safeQuery("portfolio-categories", [], () =>
+    db.portfolioCategory.findMany({
+      orderBy: { name: "asc" },
+      include: { _count: { select: { portfolios: { where: { published: true } } } } },
+    })
+  );
 }
 
 const publishedJournalWhere = {
@@ -70,69 +92,78 @@ const publishedJournalWhere = {
 } as const;
 
 export function getPublishedJournals(options?: { take?: number; categorySlug?: string }) {
-  return db.journal.findMany({
-    where: {
-      ...publishedJournalWhere,
-      ...(options?.categorySlug
-        ? { category: { is: { slug: options.categorySlug } } }
-        : {}),
-    },
-    select: JOURNAL_SELECT,
-    orderBy: { publishedAt: "desc" },
-    ...(options?.take ? { take: options.take } : {}),
-  });
+  return safeQuery("journals", [], () =>
+    db.journal.findMany({
+      where: {
+        ...publishedJournalWhere,
+        ...(options?.categorySlug
+          ? { category: { is: { slug: options.categorySlug } } }
+          : {}),
+      },
+      select: JOURNAL_SELECT,
+      orderBy: { publishedAt: "desc" },
+      ...(options?.take ? { take: options.take } : {}),
+    })
+  );
 }
 
 export function getJournalBySlug(slug: string) {
-  return db.journal.findFirst({
-    where: { slug, ...publishedJournalWhere },
-    select: JOURNAL_SELECT,
-  });
+  return safeQuery("journal:slug", null, () =>
+    db.journal.findFirst({
+      where: { slug, ...publishedJournalWhere },
+      select: JOURNAL_SELECT,
+    })
+  );
 }
 
 export function getJournalCategories() {
-  return db.journalCategory.findMany({
-    orderBy: { name: "asc" },
-    include: { _count: { select: { journals: { where: publishedJournalWhere as object } } } },
-  });
+  return safeQuery("journal-categories", [], () =>
+    db.journalCategory.findMany({
+      orderBy: { name: "asc" },
+      include: { _count: { select: { journals: { where: publishedJournalWhere as object } } } },
+    })
+  );
 }
 
 /** Previous & next published articles ordered by publishedAt. */
 export async function getJournalNeighbors(publishedAt: Date | null, currentId: string) {
   if (!publishedAt) return { prev: null, next: null };
 
-  const [prev, next] = await Promise.all([
-    db.journal.findFirst({
-      where: {
-        ...publishedJournalWhere,
-        id: { not: currentId },
-        publishedAt: { gt: publishedAt },
-      },
-      select: { title: true, slug: true },
-      orderBy: { publishedAt: "asc" },
-    }),
-    db.journal.findFirst({
-      where: {
-        ...publishedJournalWhere,
-        id: { not: currentId },
-        publishedAt: { lt: publishedAt },
-      },
-      select: { title: true, slug: true },
-      orderBy: { publishedAt: "desc" },
-    }),
-  ]);
-  return { prev, next };
+  return safeQuery("journal:neighbors", { prev: null, next: null }, () =>
+    Promise.all([
+      db.journal.findFirst({
+        where: {
+          ...publishedJournalWhere,
+          id: { not: currentId },
+          publishedAt: { gt: publishedAt },
+        },
+        select: { title: true, slug: true },
+        orderBy: { publishedAt: "asc" },
+      }),
+      db.journal.findFirst({
+        where: {
+          ...publishedJournalWhere,
+          id: { not: currentId },
+          publishedAt: { lt: publishedAt },
+        },
+        select: { title: true, slug: true },
+        orderBy: { publishedAt: "desc" },
+      }),
+    ]).then(([prev, next]) => ({ prev, next }))
+  );
 }
 
 export function getRelatedJournals(categoryId: string | null, excludeId: string, take = 3) {
-  return db.journal.findMany({
-    where: {
-      ...publishedJournalWhere,
-      id: { not: excludeId },
-      ...(categoryId ? { categoryId } : {}),
-    },
-    select: JOURNAL_SELECT,
-    orderBy: { publishedAt: "desc" },
-    take,
-  });
+  return safeQuery("journal:related", [], () =>
+    db.journal.findMany({
+      where: {
+        ...publishedJournalWhere,
+        id: { not: excludeId },
+        ...(categoryId ? { categoryId } : {}),
+      },
+      select: JOURNAL_SELECT,
+      orderBy: { publishedAt: "desc" },
+      take,
+    })
+  );
 }
