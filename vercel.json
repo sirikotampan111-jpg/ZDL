@@ -1,5 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "prisma generate --schema=prisma/schema.postgres.prisma && next build"
+  "buildCommand": "if [ -z \"$DATABASE_URL\" ]; then echo '❌ BUILD GAGAL: DATABASE_URL belum diset. Buka Vercel → Project → Settings → Environment Variables, lalu tambahkan DATABASE_URL (PostgreSQL dari Neon/Supabase), NEXTAUTH_SECRET, NEXTAUTH_URL, NEXT_PUBLIC_SITE_URL.'; exit 1; fi && echo '▶ Generate Prisma Client (PostgreSQL)' && prisma generate --schema=prisma/schema.postgres.prisma && echo '▶ Sinkronisasi tabel database (prisma db push)' && prisma db push --skip-generate --schema=prisma/schema.postgres.prisma && echo '▶ Seed admin & kategori' && node scripts/seed-core.mjs && echo '▶ Next.js build' && next build"
 }

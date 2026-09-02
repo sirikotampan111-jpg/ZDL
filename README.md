@@ -72,26 +72,28 @@ Buka `http://localhost:3000` — CMS di `http://localhost:3000/admin`.
 
 1. **Database** — buat PostgreSQL gratis di [Neon](https://neon.tech) atau [Supabase](https://supabase.com), catat connection string.
    - Di Neon, pakai connection string **pooled** (yang mengandung `-pooler`) untuk `DATABASE_URL`.
-2. **Push schema + seed ke Postgres** dari lokal (cukup sekali di awal):
-   ```bash
-   DATABASE_URL="postgresql://..." bunx prisma db push --schema prisma/schema.postgres.prisma
-   ```
-   Lalu seed data awal + akun admin (salin `.env` sementara dengan DATABASE_URL postgres, jalankan `bun prisma/seed.ts`, atau buat akun admin lewat SQL editor).
-3. **Import repo ke Vercel** — framework preset: Next.js.
-   - `vercel.json` di root repo otomatis menjalankan `prisma generate` memakai `prisma/schema.postgres.prisma` (provider PostgreSQL) sebelum `next build` — **tanpa perlu rename schema manual**.
-   - Halaman publik (home, portfolio, journal) dirender per-request (`force-dynamic`), jadi konten yang diubah lewat CMS langsung tampil tanpa redeploy.
-4. **Environment variables di Vercel** (Project Settings → Environment Variables):
+2. **Import repo ke Vercel** — [vercel.com/new](https://vercel.com/new) → pilih repo `ZDL` → framework Next.js.
+3. **Environment variables di Vercel** (Project Settings → Environment Variables) — WAJIB diisi **sebelum** deploy pertama:
    | Key | Value | Wajib? |
    |---|---|---|
    | `DATABASE_URL` | connection string Postgres (pooled) | ✅ |
    | `NEXTAUTH_SECRET` | secret acak (`openssl rand -base64 32`) | ✅ |
-   | `NEXTAUTH_URL` | `https://zdl.my.id` | ✅ |
+   | `NEXTAUTH_URL` | `https://www.zdl.my.id` (atau URL vercel.app) | ✅ |
    | `NEXT_PUBLIC_SITE_URL` | `https://zdl.my.id` | ✅ |
+   | `ADMIN_EMAIL` | email akun admin CMS | opsional |
+   | `ADMIN_PASSWORD` | password akun admin CMS | opsional |
    | `BLOB_READ_WRITE_TOKEN` | token Vercel Blob (Storage → Blob → connect) | opsional |
+4. **Deploy** — build Vercel otomatis menjalankan (lihat `vercel.json`):
+   - `prisma generate` dengan schema PostgreSQL (`prisma/schema.postgres.prisma`)
+   - `prisma db push` — **membuat semua tabel otomatis** di database
+   - `node scripts/seed-core.mjs` — **auto-seed akun admin + 20 kategori** (idempotent)
+   - `next build`
+   > Jika `DATABASE_URL` belum diset, build gagal dengan pesan yang jelas — tidak ada deploy "setengah jadi".
+   > Halaman publik (home, portfolio, journal) dirender per-request (`force-dynamic`), jadi konten dari CMS langsung tampil tanpa redeploy.
 5. **Media/upload di produksi** — filesystem serverless read-only. Dua opsi:
    - **Direkomendasikan**: aktifkan Vercel Blob (tab Storage di project Vercel → Create Database → Blob → connect ke project). Env `BLOB_READ_WRITE_TOKEN` otomatis ditambahkan, dan fitur upload di Media Library langsung menyimpan ke Blob CDN.
    - Alternatif: tab **"Dari URL"** di Media Library dengan storage eksternal (Cloudinary / S3).
-6. **Custom domain** — tambahkan `zdl.my.id` di Vercel, arahkan DNS sesuai instruksi.
+6. **Custom domain** — tambahkan `zdl.my.id` + `www.zdl.my.id` di Vercel, arahkan DNS sesuai instruksi.
 
 ### Mengganti password admin
 
