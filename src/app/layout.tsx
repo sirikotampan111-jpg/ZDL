@@ -1,84 +1,71 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "next-themes";
-import { AuthProvider, Chatbot } from "@/components/client-providers";
-import { CartSync } from "@/components/cart-sync";
-import { LocalBusinessJsonLd, WebSiteJsonLd } from "@/components/json-ld";
+import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/components/theme-provider";
+import { site } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
-
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
   display: "swap",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.zds.asia";
-const SITE_NAME = "Zheng Digital Studio";
-const SITE_DESCRIPTION =
-  "Jasa pembuatan website profesional Jakarta, Depok, Bogor, Bekasi, Tangerang, Bandung, Surabaya, Sidoarjo, Gresik, Solo, Bali & Kupang. Zheng Digital Studio — terjamin, anti-scam, garansi uang kembali.";
-
-// Guard: ensure SITE_URL is a valid URL for metadataBase
-function safeMetadataBase(url: string): URL | undefined {
-  try {
-    return new URL(url);
-  } catch {
-    return undefined;
-  }
-}
-
 export const metadata: Metadata = {
-  ...(safeMetadataBase(SITE_URL) ? { metadataBase: safeMetadataBase(SITE_URL) } : {}),
+  metadataBase: new URL(site.url),
   title: {
-    default: "Jasa Pembuatan Website Profesional — Zheng Digital Studio | Terjamin & Anti-Scam",
-    template: "%s | Zheng Digital Studio",
+    default: `${site.fullName} | Jasa Web & App Development Profesional`,
+    template: `%s | ${site.name}`,
   },
-  description: SITE_DESCRIPTION,
+  description: site.description,
   keywords: [
-    "jasa pembuatan website Jakarta",
-    "jasa pembuatan website Depok",
-    "jasa pembuatan website Bogor",
-    "jasa pembuatan website Bekasi",
-    "jasa pembuatan website Tangerang",
-    "jasa pembuatan website Bandung",
-    "jasa pembuatan website Surabaya",
-    "jasa pembuatan website Sidoarjo",
-    "jasa pembuatan website Gresik",
-    "jasa pembuatan website Solo",
-    "jasa pembuatan website Bali",
-    "jasa pembuatan website Kupang",
-    "jasa pembuatan website Jabodetabek",
-    "jasa website profesional",
-    "jasa website terpercaya",
-    "website UMKM",
-    "website properti",
-    "website kuliner",
-    "website anti scam",
-    "website garansi uang kembali",
-    "Zheng Digital Studio",
-    "ZDS",
-    "jasa website murah",
-    "website modern",
-    "website siap SEO",
-    "paket website Indonesia",
-    "web developer Jakarta",
-    "web developer Tangerang",
-    "web developer Bandung",
-    "web developer Surabaya",
+    "jasa pembuatan website",
+    "jasa pembuatan aplikasi",
+    "web development",
+    "mobile app development",
+    "jasa website Tangerang",
+    "jasa website Jakarta",
+    "jasa pembuatan aplikasi Indonesia",
+    "custom software development",
+    "jasa pembuatan dashboard",
+    "jasa pembuatan SaaS",
+    "ZDL",
+    "Zheng Digital Lab",
   ],
-  authors: [{ name: SITE_NAME }],
-  creator: SITE_NAME,
-  publisher: SITE_NAME,
+  authors: [{ name: site.legalName, url: site.url }],
+  creator: site.legalName,
+  publisher: site.legalName,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    url: site.url,
+    siteName: site.fullName,
+    title: `${site.fullName} | Jasa Web & App Development Profesional`,
+    description: site.description,
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "ZDL — Zheng Digital Lab",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${site.fullName} | Web & App Development`,
+    description: site.description,
+    images: ["/og-image.png"],
+  },
   robots: {
     index: true,
     follow: true,
@@ -91,32 +78,67 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: [
-      { url: "/favicon.png", sizes: "64x64", type: "image/png" },
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-    ],
-    apple: "/apple-touch-icon.png",
-  },
-  verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "",
-  },
-  openGraph: {
-    title: "Jasa Pembuatan Website Profesional — Zheng Digital Studio | Terjamin & Anti-Scam",
-    description: SITE_DESCRIPTION,
-    url: SITE_URL,
-    siteName: SITE_NAME,
-    type: "website",
-    locale: "id_ID",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Jasa Pembuatan Website Profesional — Zheng Digital Studio | Terjamin & Anti-Scam",
-    description: SITE_DESCRIPTION,
-  },
-  alternates: {
-    canonical: SITE_URL,
+    icon: "/icon.svg",
+    apple: "/icon.svg",
   },
 };
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fafafc" },
+    { media: "(prefers-color-scheme: dark)", color: "#08080d" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+};
+
+function JsonLd() {
+  const organization = {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "@id": `${site.url}/#organization`,
+    name: site.fullName,
+    alternateName: ["ZDL", site.legalName],
+    url: site.url,
+    logo: `${site.url}/icon.svg`,
+    image: `${site.url}/og-image.png`,
+    description: site.description,
+    email: site.email,
+    telephone: `+${site.whatsapp.intl}`,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: site.location.city,
+      addressRegion: site.location.region,
+      addressCountry: "ID",
+    },
+    areaServed: site.location.serviceAreas.map((area) => ({
+      "@type": "Place",
+      name: area,
+    })),
+    priceRange: "$$",
+    sameAs: Object.values(site.social).filter(Boolean),
+  };
+
+  const website = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${site.url}/#website`,
+    url: site.url,
+    name: site.fullName,
+    description: site.description,
+    publisher: { "@id": `${site.url}/#organization` },
+    inLanguage: "id-ID",
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify([organization, website]),
+      }}
+    />
+  );
+}
 
 export default function RootLayout({
   children,
@@ -124,36 +146,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" suppressHydrationWarning>
-      <head>
-        <LocalBusinessJsonLd />
-        <WebSiteJsonLd />
-        <script
-          src={
-            process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === "true"
-              ? "https://app.midtrans.com/snap/v2/assets/snap.js"
-              : "https://app.sandbox.midtrans.com/snap/v2/assets/snap.js"
-          }
-          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || ""}
-          async
-        />
-      </head>
+    <html lang="id" suppressHydrationWarning data-scroll-behavior="smooth">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased bg-background text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen flex flex-col`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <AuthProvider>
-            {children}
-            <Toaster richColors position="top-right" />
-            <Chatbot />
-            <CartSync />
-          </AuthProvider>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+          {children}
+          <Toaster />
         </ThemeProvider>
+        <JsonLd />
       </body>
     </html>
   );

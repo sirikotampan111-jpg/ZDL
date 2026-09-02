@@ -1,0 +1,153 @@
+// ZDL — Zheng Digital Lab
+// Prisma schema
+// NOTE: Sandbox runs on SQLite. For Vercel production, switch provider to "postgresql".
+// Both providers are fully compatible with this schema.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================ USERS / AUTH
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  passwordHash String
+  role         String    @default("ADMIN")
+  journals     Journal[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+// ============================================================ PORTFOLIO
+model PortfolioCategory {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  slug        String      @unique
+  description String?
+  portfolios  Portfolio[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Portfolio {
+  id           String           @id @default(cuid())
+  title        String
+  slug         String           @unique
+  description  String
+  categoryId   String?
+  category     PortfolioCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  thumbnail    String?
+  client       String?
+  projectUrl   String?
+  githubUrl    String?
+  year         Int?
+  featured     Boolean          @default(false)
+  published    Boolean          @default(true)
+  seoTitle     String?
+  seoDescription String?
+  technologies String           @default("[]")
+  images       PortfolioImage[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([categoryId])
+  @@index([published, featured])
+  @@index([slug])
+}
+
+model PortfolioImage {
+  id          String    @id @default(cuid())
+  portfolioId String
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  url         String
+  alt         String?
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@index([portfolioId])
+}
+
+// ============================================================ JOURNAL
+model JournalCategory {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  journals    Journal[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Journal {
+  id            String           @id @default(cuid())
+  title         String
+  slug          String           @unique
+  excerpt       String?
+  content       String
+  featuredImage String?
+  categoryId    String?
+  category      JournalCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  authorId      String?
+  author        User?            @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorName    String?
+  status        String           @default("DRAFT")
+  publishedAt   DateTime?
+  seoTitle      String?
+  seoDescription String?
+  canonicalUrl  String?
+  ogImage       String?
+  tags          JournalTag[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([status, publishedAt])
+  @@index([categoryId])
+  @@index([slug])
+}
+
+model Tag {
+  id        String       @id @default(cuid())
+  name      String       @unique
+  slug      String       @unique
+  journals  JournalTag[]
+  createdAt DateTime     @default(now())
+}
+
+model JournalTag {
+  journalId String
+  journal   Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  tagId     String
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([journalId, tagId])
+}
+
+// ============================================================ MEDIA
+model Media {
+  id        String   @id @default(cuid())
+  filename  String
+  url       String
+  mimeType  String?
+  size      Int?
+  alt       String?
+  createdAt DateTime @default(now())
+}
+
+// ============================================================ CONTACT
+model ContactMessage {
+  id          String   @id @default(cuid())
+  name        String
+  business    String?
+  email       String
+  whatsapp    String?
+  projectType String?
+  description String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
