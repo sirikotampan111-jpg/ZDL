@@ -9,6 +9,9 @@ import { getPublishedPortfolios, getPortfolioCategories } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { site } from "@/lib/site";
 
+// Content is CMS-managed — render per request so updates appear immediately.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Portfolio — Project Web, Aplikasi & Sistem yang Pernah Kami Bangun",
   description:

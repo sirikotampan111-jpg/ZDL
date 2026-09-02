@@ -18,10 +18,8 @@ import {
 import { extractToc, readingTime } from "@/lib/markdown";
 import { formatDate, site } from "@/lib/site";
 
-export async function generateStaticParams() {
-  const items = await getPublishedJournals();
-  return items.map((j) => ({ slug: j.slug }));
-}
+// Content is CMS-managed — render per request so updates appear immediately.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }

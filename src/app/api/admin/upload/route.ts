@@ -11,9 +11,10 @@ const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
 /**
  * File upload endpoint.
- * NOTE: On self-hosted/VPS this writes to /public/uploads.
- * On serverless (Vercel), filesystem is read-only — the admin UI also supports
- * adding media by URL (e.g. Vercel Blob / Cloudinary) which is the recommended path.
+ * - Production (Vercel): if BLOB_READ_WRITE_TOKEN is set, files are stored in
+ *   Vercel Blob and the returned URL is a permanent public CDN URL.
+ * - Dev / self-hosted / VPS: files are written to /public/uploads.
+ * The admin UI also supports adding media by URL (Cloudinary/S3) at any time.
  */
 export async function POST(req: NextRequest) {
   const session = await getAdminSession();
@@ -41,22 +42,42 @@ export async function POST(req: NextRequest) {
     const ext = path.extname(file.name) || ".png";
     const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
 
-    // Write to public/uploads (works in dev / self-hosted / standalone node)
     let url: string;
-    try {
-      const fs = await import("fs/promises");
-      const uploadDir = path.join(process.cwd(), "public", "uploads");
-      await fs.mkdir(uploadDir, { recursive: true });
-      await fs.writeFile(path.join(uploadDir, safeName), buffer);
-      url = `/uploads/${safeName}`;
-    } catch {
-      return NextResponse.json(
-        {
-          error:
-            "Upload file gagal (filesystem read-only). Gunakan opsi 'Tambah dari URL' di Media Library.",
-        },
-        { status: 500 }
-      );
+
+    // Production: store in Vercel Blob when the token is configured
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      try {
+        const { put } = await import("@vercel/blob");
+        const blob = await put(`zdl-media/${safeName}`, buffer, {
+          access: "public",
+          contentType: file.type,
+          addRandomSuffix: false,
+        });
+        url = blob.url;
+      } catch (error) {
+        console.error("[UPLOAD_BLOB]", error);
+        return NextResponse.json(
+          { error: "Upload ke Vercel Blob gagal. Periksa BLOB_READ_WRITE_TOKEN." },
+          { status: 500 }
+        );
+      }
+    } else {
+      // Dev / self-hosted: write to public/uploads
+      try {
+        const fs = await import("fs/promises");
+        const uploadDir = path.join(process.cwd(), "public", "uploads");
+        await fs.mkdir(uploadDir, { recursive: true });
+        await fs.writeFile(path.join(uploadDir, safeName), buffer);
+        url = `/uploads/${safeName}`;
+      } catch {
+        return NextResponse.json(
+          {
+            error:
+              "Filesystem read-only di serverless. Set BLOB_READ_WRITE_TOKEN (Vercel Blob) atau gunakan opsi 'Tambah dari URL' di Media Library.",
+          },
+          { status: 500 }
+        );
+      }
     }
 
     const created = await db.media.create({

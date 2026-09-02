@@ -19,10 +19,8 @@ import { getPortfolioBySlug, getPublishedPortfolios } from "@/lib/queries";
 import { parseJsonArray } from "@/lib/markdown";
 import { waLink, site } from "@/lib/site";
 
-export async function generateStaticParams() {
-  const items = await getPublishedPortfolios();
-  return items.map((p) => ({ slug: p.slug }));
-}
+// Content is CMS-managed — render per request so updates appear immediately.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }

@@ -12,6 +12,9 @@ import { readingTime } from "@/lib/markdown";
 import { cn } from "@/lib/utils";
 import { site } from "@/lib/site";
 
+// Content is CMS-managed — render per request so updates appear immediately.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "ZDL Journal — Artikel Teknologi, Web Development & Bisnis Digital",
   description:
