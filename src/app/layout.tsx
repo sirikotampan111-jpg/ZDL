@@ -78,8 +78,8 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
+    icon: "/icon.png",
+    apple: "/icon.png",
   },
 };
 
@@ -100,7 +100,7 @@ function JsonLd() {
     name: site.fullName,
     alternateName: ["ZDL", site.legalName],
     url: site.url,
-    logo: `${site.url}/icon.svg`,
+    logo: `${site.url}/icon.png`,
     image: `${site.url}/og-image.png`,
     description: site.description,
     email: site.email,

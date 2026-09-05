@@ -1,31 +1,16 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
+import logoMarkSrc from "../../../public/logo-mark.png";
 
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 512 512"
-      className={cn("h-9 w-9", className)}
+    <Image
+      src={logoMarkSrc}
+      alt=""
       aria-hidden="true"
-      role="img"
-    >
-      <defs>
-        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#8B5CF6" />
-          <stop offset="55%" stopColor="#7C3AED" />
-          <stop offset="100%" stopColor="#22D3EE" />
-        </linearGradient>
-      </defs>
-      <rect width="512" height="512" rx="116" fill="url(#logoGrad)" />
-      <path
-        d="M148 158 L364 158 L364 222 L262 290 L364 290 L364 354 L148 354 L148 290 L250 222 L148 222 Z"
-        fill="#FFFFFF"
-        stroke="#FFFFFF"
-        strokeWidth="26"
-        strokeLinejoin="round"
-        paintOrder="stroke"
-      />
-      <circle cx="388" cy="126" r="18" fill="#FFFFFF" />
-    </svg>
+      priority
+      className={cn("h-9 w-9 rounded-lg object-cover", className)}
+    />
   );
 }
 
