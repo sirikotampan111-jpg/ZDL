@@ -45,3 +45,4 @@ server.log
 worklog.md
 agent-ctx/
 verification-*
+.env*
