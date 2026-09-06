@@ -49,10 +49,10 @@ try {
   const passwordHash = await bcrypt.hash(password, 12);
   await db.user.upsert({
     where: { email },
-    update: {},
+    update: { passwordHash },
     create: { email, name: "ZDL Admin", passwordHash, role: "ADMIN" },
   });
-  console.log(`[seed-core] Admin ready: ${email}`);
+  console.log(`[seed-core] Admin ready: ${email} (password synced from ADMIN_PASSWORD env)`);
 
   for (const c of portfolioCategories) {
     await db.portfolioCategory.upsert({ where: { slug: c.slug }, update: {}, create: c });

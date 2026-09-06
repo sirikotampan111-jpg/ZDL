@@ -15,30 +15,91 @@ import { formatDate } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
+type Q<T> = { label: string; data: T; error?: string };
+
+async function q<T>(label: string, fn: () => Promise<T>): Promise<Q<T>> {
+  try {
+    return { label, data: await fn() };
+  } catch (e) {
+    return {
+      label,
+      data: null as T,
+      error: e instanceof Error ? `${e.name}: ${e.message}` : String(e),
+    };
+  }
+}
+
 export default async function AdminOverviewPage() {
-  const [
-    totalPortfolios,
-    totalJournals,
-    publishedJournals,
-    draftJournals,
-    totalPortfolioCategories,
-    totalJournalCategories,
-    unreadMessages,
-    recentPortfolios,
-    recentJournals,
-    recentMessages,
-  ] = await Promise.all([
-    db.portfolio.count(),
-    db.journal.count(),
-    db.journal.count({ where: { status: "PUBLISHED" } }),
-    db.journal.count({ where: { status: "DRAFT" } }),
-    db.portfolioCategory.count(),
-    db.journalCategory.count(),
-    db.contactMessage.count({ where: { isRead: false } }),
-    db.portfolio.findMany({ orderBy: { updatedAt: "desc" }, take: 5 }),
-    db.journal.findMany({ orderBy: { updatedAt: "desc" }, take: 5 }),
-    db.contactMessage.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
+  const results = await Promise.all([
+    q("portfolio.count()", () => db.portfolio.count()),
+    q("journal.count()", () => db.journal.count()),
+    q("journal.count(PUBLISHED)", () => db.journal.count({ where: { status: "PUBLISHED" } })),
+    q("journal.count(DRAFT)", () => db.journal.count({ where: { status: "DRAFT" } })),
+    q("portfolioCategory.count()", () => db.portfolioCategory.count()),
+    q("journalCategory.count()", () => db.journalCategory.count()),
+    q("contactMessage.count(unread)", () => db.contactMessage.count({ where: { isRead: false } })),
+    q("portfolio.findMany(recent)", () =>
+      db.portfolio.findMany({ orderBy: { updatedAt: "desc" }, take: 5 })
+    ),
+    q("journal.findMany(recent)", () =>
+      db.journal.findMany({ orderBy: { updatedAt: "desc" }, take: 5 })
+    ),
+    q("contactMessage.findMany(recent)", () =>
+      db.contactMessage.findMany({ orderBy: { createdAt: "desc" }, take: 5 })
+    ),
   ]);
+
+  const failed = results.filter((r) => r.error);
+
+  // ── Diagnostic mode: show the real DB error instead of crashing with 500 ──
+  if (failed.length > 0) {
+    return (
+      <div className="space-y-5">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard — mode diagnostik</h1>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            {failed.length} dari {results.length} query database gagal dijalankan di server
+            produksi. Pesan error asli ditampilkan di bawah ini untuk memudahkan diagnosis.
+          </p>
+        </div>
+        <ul className="space-y-2 rounded-2xl border border-border bg-card p-5 font-mono text-xs leading-relaxed">
+          {results.map((r) => (
+            <li key={r.label} className={r.error ? "text-destructive" : "text-emerald-600"}>
+              {r.error ? (
+                <>
+                  <span className="font-bold">GAGAL</span> {r.label} → {r.error}
+                </>
+              ) : (
+                <>
+                  <span className="font-bold">OK</span>&nbsp;&nbsp; {r.label}
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+        <p className="text-xs text-muted-foreground">
+          Waktu server: {new Date().toISOString()} • Region function &amp; koneksi database
+          dapat memengaruhi hasil. Setelah masalah diperbaiki, dashboard akan kembali normal
+          secara otomatis.
+        </p>
+      </div>
+    );
+  }
+
+  const totalPortfolios = results[0].data as number;
+  const totalJournals = results[1].data as number;
+  const publishedJournals = results[2].data as number;
+  const draftJournals = results[3].data as number;
+  const totalPortfolioCategories = results[4].data as number;
+  const totalJournalCategories = results[5].data as number;
+  const unreadMessages = results[6].data as number;
+  const recentPortfolios = results[7].data as Awaited<
+    ReturnType<typeof db.portfolio.findMany>
+  >;
+  const recentJournals = results[8].data as Awaited<ReturnType<typeof db.journal.findMany>>;
+  const recentMessages = results[9].data as Awaited<
+    ReturnType<typeof db.contactMessage.findMany>
+  >;
 
   const stats = [
     { label: "Total Portfolio", value: totalPortfolios, icon: FolderKanban, href: "/admin/portfolios" },
