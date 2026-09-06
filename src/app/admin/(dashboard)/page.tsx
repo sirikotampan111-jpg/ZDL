@@ -30,24 +30,32 @@ async function q<T>(label: string, fn: () => Promise<T>): Promise<Q<T>> {
 }
 
 export default async function AdminOverviewPage() {
-  const results = await Promise.all([
-    q("portfolio.count()", () => db.portfolio.count()),
-    q("journal.count()", () => db.journal.count()),
-    q("journal.count(PUBLISHED)", () => db.journal.count({ where: { status: "PUBLISHED" } })),
-    q("journal.count(DRAFT)", () => db.journal.count({ where: { status: "DRAFT" } })),
-    q("portfolioCategory.count()", () => db.portfolioCategory.count()),
-    q("journalCategory.count()", () => db.journalCategory.count()),
-    q("contactMessage.count(unread)", () => db.contactMessage.count({ where: { isRead: false } })),
-    q("portfolio.findMany(recent)", () =>
+  const queryList: Array<[string, () => Promise<unknown>]> = [
+    ["portfolio.count()", () => db.portfolio.count()],
+    ["journal.count()", () => db.journal.count()],
+    ["journal.count(PUBLISHED)", () => db.journal.count({ where: { status: "PUBLISHED" } })],
+    ["journal.count(DRAFT)", () => db.journal.count({ where: { status: "DRAFT" } })],
+    ["portfolioCategory.count()", () => db.portfolioCategory.count()],
+    ["journalCategory.count()", () => db.journalCategory.count()],
+    ["contactMessage.count(unread)", () => db.contactMessage.count({ where: { isRead: false } })],
+    ["portfolio.findMany(recent)", () =>
       db.portfolio.findMany({ orderBy: { updatedAt: "desc" }, take: 5 })
-    ),
-    q("journal.findMany(recent)", () =>
+    ],
+    ["journal.findMany(recent)", () =>
       db.journal.findMany({ orderBy: { updatedAt: "desc" }, take: 5 })
-    ),
-    q("contactMessage.findMany(recent)", () =>
+    ],
+    ["contactMessage.findMany(recent)", () =>
       db.contactMessage.findMany({ orderBy: { createdAt: "desc" }, take: 5 })
-    ),
-  ]);
+    ],
+  ];
+
+  // Run queries SEQUENTIALLY — never in parallel.
+  // The serverless database pool is tiny (connection_limit=1 through PgBouncer);
+  // parallel fan-out causes Prisma P2024 "connection pool timeout" on Vercel.
+  const results: Q<unknown>[] = [];
+  for (const [label, fn] of queryList) {
+    results.push(await q(label, fn));
+  }
 
   const failed = results.filter((r) => r.error);
 
