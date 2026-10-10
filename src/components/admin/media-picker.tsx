@@ -68,7 +68,7 @@ export function MediaPicker({
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+      const res = await fetch("/api/admin/media", { method: "POST", body: formData });
       const data = await res.json();
       if (res.ok) {
         toast({ title: "Upload berhasil" });
