@@ -129,6 +129,8 @@ model JournalTag {
 }
 
 // ============================================================ MEDIA
+// Binary files (images) are stored directly in the database as bytes.
+// No external object storage required. Files are served via /api/media/[id].
 model Media {
   id        String   @id @default(cuid())
   filename  String
@@ -136,6 +138,7 @@ model Media {
   mimeType  String?
   size      Int?
   alt       String?
+  data      Bytes?
   createdAt DateTime @default(now())
 }
 

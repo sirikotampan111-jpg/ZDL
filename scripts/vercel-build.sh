@@ -10,6 +10,8 @@ if [ -n "$DATABASE_URL" ]; then
   prisma db push --skip-generate --schema=prisma/schema.postgres.prisma
   echo "▶ Seeding admin & categories"
   node scripts/seed-core.mjs
+  echo "▶ Seeding starting content (portfolio + journal)"
+  node scripts/seed-content.mjs || echo "⚠️  content seed failed — continuing build"
 else
   echo "⚠️  DATABASE_URL not set — deploying WITHOUT database (public pages render 200 with empty states)."
   echo "   → Add DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL, NEXT_PUBLIC_SITE_URL in Vercel → Settings → Environment Variables, then redeploy."

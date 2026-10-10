@@ -166,9 +166,7 @@ export function MediaPicker({
               />
             </label>
             <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-              Catatan deployment: pada serverless (mis. Vercel) filesystem hanya-baca —
-              gunakan tab <strong>Dari URL</strong> dengan storage eksternal (Vercel Blob,
-              Cloudinary, S3) untuk hasil terbaik.
+              File gambar tersimpan aman di database Neon — tidak butuh storage eksternal.
             </p>
           </TabsContent>
 
@@ -266,7 +264,7 @@ export function MediaManager() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 sm:flex-row">
         <Input
-          placeholder="Tambah gambar dari URL (mis. Vercel Blob / Cloudinary)…"
+          placeholder="Tambah gambar dari URL eksternal (mis. CDN / drive publik)…"
           value={urlInput}
           onChange={(e) => setUrlInput(e.target.value)}
           className="flex-1"

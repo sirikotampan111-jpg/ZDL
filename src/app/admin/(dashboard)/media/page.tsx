@@ -8,8 +8,8 @@ export default function AdminMediaPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Media Library</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Kelola gambar untuk portfolio dan artikel — upload dari perangkat atau gunakan URL
-          eksternal (disarankan untuk deployment serverless).
+          Kelola gambar untuk portfolio dan artikel — upload dari perangkat (tersimpan di
+          database) atau gunakan URL eksternal.
         </p>
       </div>
       <MediaManager />

@@ -129,6 +129,9 @@ model JournalTag {
 }
 
 // ============================================================ MEDIA
+// Binary files (images) are stored directly in Postgres (Neon) as bytea.
+// No external object storage (Vercel Blob / S3) required.
+// Files are served through /api/media/[id].
 model Media {
   id        String   @id @default(cuid())
   filename  String
@@ -136,6 +139,7 @@ model Media {
   mimeType  String?
   size      Int?
   alt       String?
+  data      Bytes?
   createdAt DateTime @default(now())
 }
 
