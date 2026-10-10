@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAdminSession, unauthorized } from "@/lib/api-auth";
 
+// Node.js runtime: uses Prisma + Buffer for bytea storage in Neon.
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/admin/upload
  * Stores the uploaded image binary directly in Postgres (Neon) as bytea.
