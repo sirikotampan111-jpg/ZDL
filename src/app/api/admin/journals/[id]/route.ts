@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { journalSchema } from "@/lib/validators";
 import { getAdminSession, unauthorized } from "@/lib/api-auth";
 import { slugify } from "@/lib/markdown";
+import { revalidatePublic } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -88,6 +89,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
       return journal;
     });
 
+    revalidatePublic({ type: "journal", slugs: [existing.slug, updated.slug] });
     return NextResponse.json({ journal: updated });
   } catch (error) {
     console.error("[JOURNAL_PUT]", error);
@@ -115,6 +117,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           publishedAt: publishedAt ? new Date(publishedAt) : journal.publishedAt || new Date(),
         },
       });
+      revalidatePublic({ type: "journal", slugs: [updated.slug] });
       return NextResponse.json({ journal: updated });
     }
 
@@ -123,6 +126,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         where: { id },
         data: { status: "DRAFT" },
       });
+      revalidatePublic({ type: "journal", slugs: [updated.slug] });
       return NextResponse.json({ journal: updated });
     }
 
@@ -139,7 +143,9 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 
   const { id } = await params;
   try {
+    const existing = await db.journal.findUnique({ where: { id } });
     await db.journal.delete({ where: { id } });
+    revalidatePublic({ type: "journal", slugs: [existing?.slug] });
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[JOURNAL_DELETE]", error);

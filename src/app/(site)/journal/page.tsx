@@ -1,19 +1,15 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Clock, Newspaper } from "lucide-react";
 import { Breadcrumb } from "@/components/site/breadcrumb";
-import { JournalCard } from "@/components/site/journal-card";
 import { CtaSection } from "@/components/site/cta-section";
-import {
-  getPublishedJournals,
-  getJournalCategories,
-} from "@/lib/queries";
+import { JournalFilterGrid } from "@/components/site/journal-filter-grid";
+import { getPublishedJournals, getJournalCategories } from "@/lib/queries";
 import { readingTime } from "@/lib/markdown";
-import { cn } from "@/lib/utils";
 import { site } from "@/lib/site";
 
-// Content is CMS-managed — render per request so updates appear immediately.
-export const dynamic = "force-dynamic";
+// Content is CMS-managed — cached via ISR and revalidated on-demand
+// when content changes through the admin API (see src/app/api/admin/*).
+// Category filtering is client-side (instant) so this page stays cached.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "ZDL Journal — Artikel Teknologi, Web Development & Bisnis Digital",
@@ -29,25 +25,29 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function JournalPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ kategori?: string }>;
-}) {
-  const { kategori } = await searchParams;
+export default async function JournalPage() {
   const [categories, journals] = await Promise.all([
     getJournalCategories(),
     getPublishedJournals(),
   ]);
 
-  const activeCategory = kategori ? categories.find((c) => c.slug === kategori) : undefined;
-  const filtered = activeCategory
-    ? journals.filter((j) => j.category?.slug === activeCategory.slug)
-    : journals;
-
-  const journalCards = filtered.map((j) => ({
-    ...j,
+  // Pass slim card data only (no markdown body) to the client component.
+  const journalCards = journals.map((j) => ({
+    id: j.id,
+    title: j.title,
+    slug: j.slug,
+    excerpt: j.excerpt,
+    featuredImage: j.featuredImage,
+    publishedAt: j.publishedAt,
+    category: j.category ? { name: j.category.name, slug: j.category.slug } : null,
     readingMinutes: readingTime(j.content),
+  }));
+
+  const categoryChips = categories.map((c) => ({
+    id: c.id,
+    name: c.name,
+    slug: c.slug,
+    count: c._count.journals,
   }));
 
   return (
@@ -69,62 +69,7 @@ export default async function JournalPage({
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-        {/* Category chips */}
-        <div className="flex flex-wrap items-center gap-2" role="navigation" aria-label="Filter kategori artikel">
-          <Link
-            href="/journal"
-            className={cn(
-              "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
-              !activeCategory
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
-            )}
-          >
-            Semua
-          </Link>
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/journal?kategori=${cat.slug}`}
-              className={cn(
-                "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
-                activeCategory?.slug === cat.slug
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
-              )}
-            >
-              {cat.name}
-              <span className="ml-1.5 text-xs opacity-70">{cat._count.journals}</span>
-            </Link>
-          ))}
-        </div>
-
-        {journalCards.length === 0 ? (
-          <div className="mt-12 flex flex-col items-center rounded-2xl border border-dashed border-border p-14 text-center">
-            <Newspaper className="h-10 w-10 text-muted-foreground/50" />
-            <p className="mt-4 font-medium">Belum ada artikel pada kategori ini.</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Coba pilih kategori lain, atau kunjungi{" "}
-              <Link href="/" className="text-primary hover:underline">
-                halaman utama
-              </Link>
-              .
-            </p>
-          </div>
-        ) : (
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {journalCards.map((j, i) => (
-              <article key={j.id} className={i === 0 && !activeCategory ? "sm:col-span-2 lg:col-span-1" : ""}>
-                <JournalCard item={j} />
-              </article>
-            ))}
-          </div>
-        )}
-
-        <p className="mt-10 flex items-center justify-center gap-2 text-center text-sm text-muted-foreground">
-          <Clock className="h-4 w-4" />
-          Artikel baru dipublikasikan secara berkala melalui ZDL CMS.
-        </p>
+        <JournalFilterGrid categories={categoryChips} journals={journalCards} />
       </section>
 
       <CtaSection

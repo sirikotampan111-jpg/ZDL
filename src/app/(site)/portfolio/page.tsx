@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { FolderOpen } from "lucide-react";
 import { Breadcrumb } from "@/components/site/breadcrumb";
-import { PortfolioCard } from "@/components/site/portfolio-card";
-import { Reveal } from "@/components/site/reveal";
 import { CtaSection } from "@/components/site/cta-section";
+import { PortfolioFilterGrid } from "@/components/site/portfolio-filter-grid";
 import { getPublishedPortfolios, getPortfolioCategories } from "@/lib/queries";
-import { cn } from "@/lib/utils";
 import { site } from "@/lib/site";
 
-// Content is CMS-managed — render per request so updates appear immediately.
-export const dynamic = "force-dynamic";
+// Content is CMS-managed — cached via ISR and revalidated on-demand
+// when content changes through the admin API (see src/app/api/admin/*).
+// Category filtering is client-side (instant) so this page stays cached.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Portfolio — Project Web, Aplikasi & Sistem yang Pernah Kami Bangun",
@@ -26,24 +24,30 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function PortfolioPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ kategori?: string }>;
-}) {
-  const { kategori } = await searchParams;
+export default async function PortfolioPage() {
   const [categories, portfolios] = await Promise.all([
     getPortfolioCategories(),
     getPublishedPortfolios(),
   ]);
 
-  const activeCategory = kategori
-    ? categories.find((c) => c.slug === kategori)
-    : undefined;
+  // Pass slim card data only to the client component.
+  const portfolioCards = portfolios.map((p) => ({
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    description: p.description,
+    thumbnail: p.thumbnail,
+    technologies: p.technologies,
+    year: p.year,
+    category: p.category ? { name: p.category.name, slug: p.category.slug } : null,
+  }));
 
-  const filtered = activeCategory
-    ? portfolios.filter((p) => p.category?.slug === activeCategory.slug)
-    : portfolios;
+  const categoryChips = categories.map((c) => ({
+    id: c.id,
+    name: c.name,
+    slug: c.slug,
+    count: c._count.portfolios,
+  }));
 
   return (
     <>
@@ -64,60 +68,7 @@ export default async function PortfolioPage({
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-        {/* Category filter */}
-        <div className="flex flex-wrap items-center gap-2" role="navigation" aria-label="Filter kategori portfolio">
-          <Link
-            href="/portfolio"
-            className={cn(
-              "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
-              !activeCategory
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
-            )}
-          >
-            Semua
-          </Link>
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/portfolio?kategori=${cat.slug}`}
-              className={cn(
-                "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
-                activeCategory?.slug === cat.slug
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
-              )}
-            >
-              {cat.name}
-              <span className="ml-1.5 text-xs opacity-70">
-                {cat._count.portfolios}
-              </span>
-            </Link>
-          ))}
-        </div>
-
-        {/* Grid */}
-        {filtered.length === 0 ? (
-          <div className="mt-12 flex flex-col items-center rounded-2xl border border-dashed border-border p-14 text-center">
-            <FolderOpen className="h-10 w-10 text-muted-foreground/50" />
-            <p className="mt-4 font-medium">Belum ada project pada kategori ini.</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Coba pilih kategori lain, atau{" "}
-              <Link href="/contact" className="text-primary hover:underline">
-                diskusikan project Anda
-              </Link>{" "}
-              untuk menjadi yang pertama.
-            </p>
-          </div>
-        ) : (
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((p, i) => (
-              <Reveal key={p.id} delay={Math.min(i, 8) * 0.05}>
-                <PortfolioCard item={p} />
-              </Reveal>
-            ))}
-          </div>
-        )}
+        <PortfolioFilterGrid categories={categoryChips} portfolios={portfolioCards} />
       </section>
 
       <CtaSection

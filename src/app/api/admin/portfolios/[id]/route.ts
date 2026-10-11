@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { portfolioSchema } from "@/lib/validators";
 import { getAdminSession, unauthorized } from "@/lib/api-auth";
+import { revalidatePublic } from "@/lib/revalidate";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -75,6 +76,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
       });
     });
 
+    revalidatePublic({ type: "portfolio", slugs: [existing.slug, updated.slug] });
     return NextResponse.json({ portfolio: updated });
   } catch (error) {
     console.error("[PORTFOLIO_PUT]", error);
@@ -99,6 +101,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         where: { id },
         data: { published: !portfolio.published },
       });
+      revalidatePublic({ type: "portfolio", slugs: [updated.slug] });
       return NextResponse.json({ portfolio: updated });
     }
 
@@ -107,6 +110,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         where: { id },
         data: { featured: !portfolio.featured },
       });
+      revalidatePublic({ type: "portfolio", slugs: [updated.slug] });
       return NextResponse.json({ portfolio: updated });
     }
 
@@ -123,7 +127,9 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 
   const { id } = await params;
   try {
+    const existing = await db.portfolio.findUnique({ where: { id } });
     await db.portfolio.delete({ where: { id } });
+    revalidatePublic({ type: "portfolio", slugs: [existing?.slug] });
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[PORTFOLIO_DELETE]", error);

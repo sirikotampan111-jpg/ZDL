@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { journalSchema } from "@/lib/validators";
 import { getAdminSession, unauthorized } from "@/lib/api-auth";
 import { slugify } from "@/lib/markdown";
+import { revalidatePublic } from "@/lib/revalidate";
 
 export async function GET() {
   const session = await getAdminSession();
@@ -75,6 +76,7 @@ export async function POST(req: NextRequest) {
       return journal;
     });
 
+    revalidatePublic({ type: "journal", slugs: [created.slug] });
     return NextResponse.json({ journal: created }, { status: 201 });
   } catch (error) {
     console.error("[JOURNAL_POST]", error);

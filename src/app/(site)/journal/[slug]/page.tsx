@@ -18,8 +18,14 @@ import {
 import { extractToc, readingTime } from "@/lib/markdown";
 import { formatDate, site } from "@/lib/site";
 
-// Content is CMS-managed — render per request so updates appear immediately.
-export const dynamic = "force-dynamic";
+// Content is CMS-managed — cached via ISR and revalidated on-demand
+// when content changes through the admin API (see src/app/api/admin/*).
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  const articles = await getPublishedJournals();
+  return articles.map((a) => ({ slug: a.slug }));
+}
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }

@@ -20,8 +20,9 @@ import { getPublishedJournals, getPublishedPortfolios } from "@/lib/queries";
 import { readingTime } from "@/lib/markdown";
 import { waLink } from "@/lib/site";
 
-// Content is CMS-managed — render per request so updates appear immediately.
-export const dynamic = "force-dynamic";
+// Content is CMS-managed — cached via ISR and revalidated on-demand
+// when content changes through the admin API (see src/app/api/admin/*).
+export const revalidate = 300;
 
 const techStack = [
   "Next.js", "React", "TypeScript", "Node.js", "Tailwind CSS",

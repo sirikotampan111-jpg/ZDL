@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { portfolioSchema } from "@/lib/validators";
 import { getAdminSession, unauthorized } from "@/lib/api-auth";
+import { revalidatePublic } from "@/lib/revalidate";
 
 export async function GET() {
   const session = await getAdminSession();
@@ -60,6 +61,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    revalidatePublic({ type: "portfolio", slugs: [created.slug] });
     return NextResponse.json({ portfolio: created }, { status: 201 });
   } catch (error) {
     console.error("[PORTFOLIO_POST]", error);
