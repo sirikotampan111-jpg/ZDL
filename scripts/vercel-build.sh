@@ -19,4 +19,10 @@ else
 fi
 
 echo "▶ Next.js build"
-next build
+# Prerendering runs parallel workers — give each enough DB connections so a
+# transient pool limit never bakes a 404 into statically generated pages.
+BUILD_DB_URL="$DATABASE_URL"
+if echo "$BUILD_DB_URL" | grep -q "connection_limit=1"; then
+  BUILD_DB_URL="${BUILD_DB_URL/connection_limit=1/connection_limit=5}"
+fi
+DATABASE_URL="$BUILD_DB_URL" next build

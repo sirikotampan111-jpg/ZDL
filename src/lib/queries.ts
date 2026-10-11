@@ -10,12 +10,23 @@ import { db } from "@/lib/db";
  */
 
 async function safeQuery<T>(label: string, fallback: T, fn: () => Promise<T>): Promise<T> {
-  try {
-    return await fn();
-  } catch (error) {
-    console.error(`[DB:${label}]`, error);
-    return fallback;
+  // Retry on transient failures (pool contention during parallel
+  // prerendering, Neon cold start after auto-suspend) so a hiccup
+  // never bakes empty states or 404s into generated pages.
+  const delays = [1000, 3000]; // ms before attempt 2 and 3
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      console.error(`[DB:${label}] attempt ${attempt + 1} failed:`, error);
+      if (attempt < delays.length) {
+        await new Promise((r) => setTimeout(r, delays[attempt]));
+        continue;
+      }
+      return fallback;
+    }
   }
+  return fallback;
 }
 
 export const PORTFOLIO_SELECT = {
