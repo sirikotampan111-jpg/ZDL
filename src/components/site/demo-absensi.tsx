@@ -54,6 +54,7 @@ const CUTOFF = 8 * 60; // batas tepat waktu 08:00
 
 export function DemoAbsensi() {
   const [now, setNow] = useState(() => new Date());
+  const [mounted, setMounted] = useState(false);
   const [empId, setEmpId] = useState("E01");
   const [checkIn, setCheckIn] = useState<Date | null>(null);
   const [breakStart, setBreakStart] = useState<Date | null>(null);
@@ -61,6 +62,9 @@ export function DemoAbsensi() {
   const [late, setLate] = useState(false);
 
   useEffect(() => {
+    // jam live dijalankan hanya setelah mount — SSR dan hydration memakai
+    // placeholder yang sama, sehingga tidak ada hydration mismatch (#418)
+    setMounted(true);
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
@@ -117,8 +121,12 @@ export function DemoAbsensi() {
         <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-3xl font-bold tabular-nums sm:text-4xl">{timeFmt(now)}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{dateFmt(now)}</p>
+              <p className="text-3xl font-bold tabular-nums sm:text-4xl">
+                {mounted ? timeFmt(now) : "—:—:—"}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {mounted ? dateFmt(now) : "memuat…"}
+              </p>
             </div>
             <div className="flex flex-col gap-1.5 sm:items-end">
               <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
