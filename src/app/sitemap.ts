@@ -18,6 +18,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/contact`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/demo/coba/kasir`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/demo/coba/booking`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${base}/demo/coba/payment`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${base}/demo/coba/payroll`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${base}/demo/coba/absensi`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${base}/demo/coba/gudang`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${base}/demo/coba/saas`, changeFrequency: "monthly", priority: 0.7 },
   ];
 
   // Dynamic content — wrapped so a DB hiccup never breaks the sitemap

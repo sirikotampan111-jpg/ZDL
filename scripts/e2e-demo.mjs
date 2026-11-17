@@ -32,6 +32,11 @@ let html = await r.text();
 check("GET /demo → 200", r.status === 200);
 check("/demo lists seeded demo", html.includes("Demo Aplikasi Kasir"));
 check("/demo has booking demo", html.includes("Sistem Booking Online"));
+check("/demo has payment demo", html.includes("Simulasi Payment Gateway"));
+check("/demo has payroll demo", html.includes("Demo Simulasi Payroll"));
+check("/demo has absensi demo", html.includes("Simulasi Absensi Karyawan"));
+check("/demo has gudang demo", html.includes("Manajemen Stok Gudang"));
+check("/demo has saas demo", html.includes("Dashboard Admin SaaS"));
 check("/demo has category chips", html.includes("Aplikasi Kasir"));
 
 r = await get("/demo/aplikasi-kasir");
@@ -57,6 +62,37 @@ html = await r.text();
 check("GET /demo/coba/booking → 200", r.status === 200);
 check("booking page has services", html.includes("Potong Rambut"));
 
+// --- 5 new interactive demo pages ---
+r = await get("/demo/coba/payment");
+html = await r.text();
+check("GET /demo/coba/payment → 200", r.status === 200);
+check("payment page has QRIS", html.includes("QRIS"));
+check("payment page has VA", html.includes("Virtual Account"));
+
+r = await get("/demo/coba/payroll");
+html = await r.text();
+check("GET /demo/coba/payroll → 200", r.status === 200);
+check("payroll page has employee (Rina)", html.includes("Rina Marlina"));
+check("payroll page has process button", html.includes("Proses Payroll"));
+
+r = await get("/demo/coba/absensi");
+html = await r.text();
+check("GET /demo/coba/absensi → 200", r.status === 200);
+check("absensi page has check-in button", html.includes("Check-In"));
+check("absensi page has monthly recap", html.includes("Rekap Bulan Ini"));
+
+r = await get("/demo/coba/gudang");
+html = await r.text();
+check("GET /demo/coba/gudang → 200", r.status === 200);
+check("gudang page has item (Biji Kopi)", html.includes("Biji Kopi Arabika"));
+check("gudang page has mutation history", html.includes("Riwayat Mutasi"));
+
+r = await get("/demo/coba/saas");
+html = await r.text();
+check("GET /demo/coba/saas → 200", r.status === 200);
+check("saas page has KPI (MRR)", html.includes("MRR"));
+check("saas page has tabs", html.includes("Pelanggan"));
+
 r = await get("/demo/tidak-ada-404");
 check("GET /demo/tidak-ada → 404", r.status === 404);
 
@@ -68,6 +104,8 @@ r = await get("/sitemap.xml");
 html = await r.text();
 check("sitemap includes /demo", html.includes("/demo"));
 check("sitemap includes /demo/aplikasi-kasir", html.includes("/demo/aplikasi-kasir"));
+check("sitemap includes /demo/coba/payment", html.includes("/demo/coba/payment"));
+check("sitemap includes /demo/simulasi-payroll", html.includes("/demo/simulasi-payroll"));
 
 // ---------- ADMIN API ----------
 console.log("\n[2] Admin auth + demo CRUD");
@@ -139,7 +177,7 @@ check("unauthenticated POST → 401", unauthRes.status === 401, `got ${unauthRes
 // LIST
 const listRes = await fetch(BASE + "/api/admin/demo", { headers: auth });
 const listData = await listRes.json();
-check("GET /api/admin/demo lists 3 rows", (listData.demos || []).length === 3, `got ${(listData.demos || []).length}`);
+check("GET /api/admin/demo lists 8 rows", (listData.demos || []).length === 8, `got ${(listData.demos || []).length}`);
 
 // UPDATE
 const putRes = await fetch(BASE + `/api/admin/demo/${created.id}`, {
@@ -190,7 +228,7 @@ check("DELETE /api/admin/demo/[id] → 200", delRes.status === 200);
 
 const listAfter = await fetch(BASE + "/api/admin/demo", { headers: auth });
 const afterData = await listAfter.json();
-check("after delete back to 2 rows", (afterData.demos || []).length === 2, `got ${(afterData.demos || []).length}`);
+check("after delete back to 7 rows", (afterData.demos || []).length === 7, `got ${(afterData.demos || []).length}`);
 
 // ---------- ADMIN UI ----------
 console.log("\n[3] Admin UI pages");

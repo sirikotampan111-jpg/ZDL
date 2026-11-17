@@ -341,6 +341,146 @@ Isi nama dan nomor WhatsApp, lalu konfirmasi. Kode booking akan terbit dan — d
     seoDescription:
       "Simulasi sistem booking online ZDL: pilih layanan, jadwal tersedia, dan terima kode konfirmasi. Cocok untuk barbershop, klinik, studio, dan bengkel.",
   },
+  {
+    slug: "simulasi-payment-gateway",
+    title: "Demo Simulasi Payment Gateway",
+    category: "Payment Gateway",
+    thumbnail: "/placeholders/portfolio-e-commerce.png",
+    demoUrl: "/demo/coba/payment",
+    accessType: "PUBLIC",
+    featured: true,
+    sortOrder: 3,
+    technologies: ["Next.js", "React", "Tailwind CSS"],
+    description: `Bagaimana rasanya menerima pembayaran digital tanpa uang tunai? Demo ini meniru alur payment gateway yang biasanya ZDL pasang di aplikasi klien: pelanggan menerima tagihan, memilih kanal, membayar, dan statusnya otomatis lunas.
+
+Empat kanal tersedia di simulasi: QRIS (semua e-wallet dan mobile banking sekaligus), Virtual Account bank BCA/BNI/Mandiri/BRI dengan nomor VA dan tombol salin, e-wallet GoPay/OVO/DANA/ShopeePay, serta kartu kredit/debit dengan verifikasi 3D Secure dan OTP.
+
+Yang penting Anda pahami: di integrasi asli, ada webhook dari penyedia payment gateway yang memberi tahu server Anda dalam hitungan detik setelah uang masuk — sehingga status pesanan, stok, dan struk WhatsApp pelanggan berjalan otomatis tanpa dicek manual. Demo ini menampilkan alur persis seperti itu, hanya tanpa uang sungguhan.`,
+    notes: `Coba hal-hal berikut di dalam demo:
+
+Pilih QRIS lalu tekan Buat Tagihan — QR muncul dengan timer kedaluwarsa 15 menit seperti QRIS asli, dan tombol Simulasikan Sudah Bayar memproses pembayaran.
+
+Pilih Virtual Account, ganti-ganti bank dan lihat nomor VA berubah — salin dengan tombol di sebelah kanan seperti pelanggan menyalin nomor VA ke mobile banking.
+
+Coba kartu kredit: masukkan 16 digit angka apa pun, sistem menampilkan verifikasi 3D Secure yang meminta OTP 6 digit — alur yang sama dengan pembayaran kartu nyata.
+
+Setelah lunas, struk pembayaran terbit lengkap dengan Payment ID, waktu, dan metode.`,
+    seoTitle: "Demo Simulasi Payment Gateway — QRIS, VA, E-Wallet | ZDL",
+    seoDescription:
+      "Simulasi payment gateway ZDL: QRIS, Virtual Account, e-wallet, dan kartu 3DS. Pahami alur pembayaran digital sebelum memasangnya di bisnis Anda.",
+  },
+  {
+    slug: "simulasi-payroll",
+    title: "Demo Simulasi Payroll",
+    category: "Payroll",
+    thumbnail: "/placeholders/portfolio-dashboard.png",
+    demoUrl: "/demo/coba/payroll",
+    accessType: "PUBLIC",
+    featured: true,
+    sortOrder: 4,
+    technologies: ["Next.js", "React", "Tailwind CSS"],
+    description: `Gajian adalah titik lemah banyak UMKM: dihitung manual di Excel, sering salah potongan, dan slip gaji tidak resmi. Demo ini menunjukkan bagaimana sistem payroll mengubah semua itu menjadi satu klik.
+
+Tekan Proses Payroll untuk bulan November 2026 dan sistem langsung menghitung enam karyawan sekaligus: gaji pokok plus tunjangan menjadi bruto, potongan ketidakhadiran mengikuti rekap absensi, BPJS dihitung dari gaji pokok, dan PPh 21 pakai tarif TER sederhana. Hasilnya tabel take-home pay per karyawan plus slip gaji resmi yang siap dicetak.
+
+Perhitungan di demo sengaja disederhanakan agar mudah dipahami. Di versi produksi, tarif BPJS, JP, dan TER diikuti regulasi terbaru, plus opsi komponen tambahan seperti lembur, bonus KPI, dan potongan kasbon. Rekap absensi pun ditarik langsung dari modul absensi — tidak diinput ulang.`,
+    notes: `Coba hal-hal berikut di dalam demo:
+
+Tekan Proses Payroll November 2026 dan tunggu satu detik — tabel hasil muncul dengan kolom bruto, potongan, dan take-home pay per karyawan.
+
+Perhatikan Siti Aminah dan Dedi Kurniawan: hari kehadiran mereka di bawah 22, jadi ada potongan absensi otomatis. Bandingkan dengan Rina yang hadir penuh.
+
+Klik Lihat pada baris mana pun untuk membuka slip gaji lengkap dengan rincian pendapatan dan potongan, lalu coba Cetak Slip.
+
+Ganti periode ke September atau Oktober 2026 untuk memulai payroll baru dari awal.`,
+    seoTitle: "Demo Simulasi Payroll — Slip Gaji Otomatis | ZDL",
+    seoDescription:
+      "Simulasi payroll ZDL: proses gaji semua karyawan sekali klik, potongan absensi, BPJS, dan PPh 21 otomatis, slip gaji siap kirim. Coba langsung di browser.",
+  },
+  {
+    slug: "simulasi-absensi",
+    title: "Demo Simulasi Absensi Karyawan",
+    category: "Absensi",
+    thumbnail: "/placeholders/portfolio-mobile-app.png",
+    demoUrl: "/demo/coba/absensi",
+    accessType: "PUBLIC",
+    featured: true,
+    sortOrder: 5,
+    technologies: ["Next.js", "React", "Tailwind CSS"],
+    description: `Buku tanda tangan mudah dimanipulasi dan sulit direkap. Aplikasi absensi menggantinya dengan check-in dari HP karyawan: jam tercatat presisi, lokasi divalidasi dari GPS, dan status tepat waktu atau terlambat muncul otomatis.
+
+Di demo ini jam berjalan sesuai jam browser Anda. Pilih salah satu dari lima karyawan, lakukan Check-In, mulai dan selesaikan istirahat, lalu Check-Out — sistem menghitung total jam kerja dan menandai keterlambatan setelah pukul 08:00.
+
+Panel rekap bulanan di kanan menunjukkan hasil sebulan penuh untuk setiap karyawan: hari hadir, telat, izin, alpha, plus estimasi potongan. Rekap inilah yang di versi asli langsung ditarik modul payroll, sehingga tanggal 25 tidak perlu lagi ada yang menghitung manual di Excel.`,
+    notes: `Coba hal-hal berikut di dalam demo:
+
+Lihat jam live di kartu absen — jika sekarang masih sebelum 08:00, check-in Anda akan tercatat Tepat waktu; setelah itu otomatis Terlambat.
+
+Tekan Check-In Sekarang, lalu Mulai Istirahat dan Selesai Istirahat, akhiri dengan Check-Out untuk melihat total jam kerja dihitung.
+
+Ganti karyawan dengan chip nama di atas — rekap 20 hari kerja berubah sesuai riwayat masing-masing orang.
+
+Perhatikan estimasi potongan di bagian bawah rekap: keterlambatan langsung dikalikan biaya telat per kejadian.`,
+    seoTitle: "Demo Simulasi Absensi Karyawan — Check-In Digital | ZDL",
+    seoDescription:
+      "Simulasi absensi ZDL: check-in GPS, status terlambat otomatis, istirahat, dan rekap bulanan siap payroll. Coba langsung di browser tanpa install.",
+  },
+  {
+    slug: "manajemen-stok-gudang",
+    title: "Demo Simulasi Manajemen Stok Gudang",
+    category: "Stok Gudang",
+    thumbnail: "/placeholders/portfolio-other.png",
+    demoUrl: "/demo/coba/gudang",
+    accessType: "PUBLIC",
+    featured: true,
+    sortOrder: 6,
+    technologies: ["Next.js", "React", "Tailwind CSS"],
+    description: `Stok yang tidak terkontrol = uang hilang dua kali: modal nanggung untuk barang yang tersesak, plus penjualan hilang karena barang habis tanpa ketahuan. Demo ini meniru aplikasi stok gudang yang membuat persediaan terlihat jelas setiap saat.
+
+Ada 11 SKU dari gudang kedai kopi simulasi: bahan baku, kemasan, produk jadi, dan alat. Setiap item punya stok saat ini, batas minimum, lokasi rak, dan status otomatis Aman, Menipis, atau Habis. Catat barang masuk atau keluar lewat tombol aksi, dan lihat semua angka berubah seketika — nilai persediaan, KPI, peringatan restock, dan riwayat mutasi.
+
+Di versi produksi, stok terpotong otomatis setiap transaksi kasir, pesanan pembelian ke supplier bisa dibuat dari halaman yang sama, dan laporan kartu stok per item tersedia kapan pun diminta. Demo ini sudah memakai alur kerja yang sama.`,
+    notes: `Coba hal-hal berikut di dalam demo:
+
+Cari Susu UHT di kolom pencarian — statusnya Menipis, stok 3 di bawah minimum 12. Tekan tombolnya di strip peringatan kuning untuk langsung restock.
+
+Catat Stok Keluar pada Biji Kopi Arabika dan lihat riwayat mutasi terbaru langsung menampilkan transaksi Anda dengan catatan yang Anda tulis.
+
+Filter per kategori (Bahan Baku, Kemasan, Produk Jadi, Alat) dan perhatikan nilai stok total di KPI ikut mencerminkan seluruh gudang.
+
+Buka Riwayat Mutasi untuk melihat semua pergerakan masuk/keluar yang tercatat berurutan.`,
+    seoTitle: "Demo Simulasi Stok Gudang — Barang Masuk Keluar | ZDL",
+    seoDescription:
+      "Simulasi aplikasi stok gudang ZDL: mutasi masuk/keluar, peringatan stok menipis, nilai persediaan, dan riwayat mutasi. Coba langsung di browser.",
+  },
+  {
+    slug: "dashboard-saas",
+    title: "Demo Dashboard Admin SaaS",
+    category: "SaaS",
+    thumbnail: "/placeholders/portfolio-saas.png",
+    demoUrl: "/demo/coba/saas",
+    accessType: "PUBLIC",
+    featured: true,
+    sortOrder: 7,
+    technologies: ["Next.js", "React", "Tailwind CSS"],
+    description: `Kalau rencana Anda bukan sekadar aplikasi internal, tetapi produk yang dijual berlangganan ke banyak pelanggan (SaaS), Anda butuh admin panel yang bisa memantau semuanya: siapa berlangganan, berapa pendapatan bulanan, siapa menunggak, dan paket mana yang paling laris.
+
+Demo ini menampilkan dashboard admin SaaS multi-tenant: empat KPI utama (MRR, pengguna aktif, churn, trial baru) lengkap dengan tren 12 bulan, grafik pendapatan bulanan dari Rp62jt tumbuh ke Rp128jt, distribusi paket Starter/Pro/Business, daftar pelanggan yang bisa dicari dan difilter, serta feed aktivitas real-time.
+
+Semua angka adalah simulasi, tetapi struktur dan fiturnya persis seperti yang ZDL bangun untuk produk klien: multi-tenant, tagihan langganan berulang, pengingat WhatsApp untuk menunggak, dan laporan pertumbuhan per bulan.`,
+    notes: `Coba hal-hal berikut di dalam demo:
+
+Jelajahi tiga tab: Ringkasan untuk KPI dan grafik, Pelanggan untuk daftar tenant, dan Aktivitas untuk feed kejadian terbaru.
+
+Cari Laundr atau Klinik di tab Pelanggan, lalu filter per paket untuk melihat distribusi Starter, Pro, dan Business.
+
+Arahkan kursor ke batang grafik pendapatan untuk melihat nilai MRR per bulan.
+
+Perhatikan pelanggan berstatus Menunggak — di sistem asli, pengingat WhatsApp-nya sudah terkirim otomatis seperti terlihat di feed aktivitas.`,
+    seoTitle: "Demo Dashboard Admin SaaS — Multi-Tenant | ZDL",
+    seoDescription:
+      "Simulasi dashboard admin SaaS ZDL: KPI MRR dan churn, grafik pendapatan, kelola pelanggan multi-tenant, dan feed aktivitas. Coba langsung di browser.",
+  },
 ];
 
 /* ------------------------------------------------------------------ */
