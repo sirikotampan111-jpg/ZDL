@@ -15,6 +15,75 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Images, Link2, UploadCloud, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+/**
+ * Kompresi gambar di sisi browser sebelum upload: sisi terpanjang dibatasi
+ * MAX_DIM px, JPEG/WebP di-encode ulang kualitas 0.85. PNG dipertahankan
+ * formatnya (aman untuk logo/transparansi) tapi tetap di-resize.
+ * GIF & SVG dilewatkan apa adanya (animasi / vektor).
+ * File kecil (< SMALL_LIMIT) dan berdimensi kecil diunggah tanpa diproses.
+ */
+const MAX_DIM = 1920;
+const SMALL_LIMIT = 300 * 1024; // 300KB — di bawah ini tidak perlu diproses
+
+async function compressImage(file: File): Promise<File> {
+  if (file.type === "image/gif" || file.type === "image/svg+xml") return file;
+  if (file.size < SMALL_LIMIT) return file;
+
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    return file; // decode gagal — kirim apa adanya, biar server yang validasi
+  }
+
+  const { width, height } = bitmap;
+  if (width <= MAX_DIM && height <= MAX_DIM && file.type === "image/jpeg") {
+    bitmap.close?.();
+    return file; // sudah kecil, biarkan asli
+  }
+
+  const scale = Math.min(1, MAX_DIM / Math.max(width, height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(width * scale);
+  canvas.height = Math.round(height * scale);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    bitmap.close?.();
+    return file;
+  }
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close?.();
+
+  // JPEG & WebP sumber → encode WebP (terkecil, didukung semua browser modern
+  // untuk encode; kalau gagal → JPEG). PNG sumber → PNG (jaga transparansi).
+  const targetType = file.type === "image/png" ? "image/png" : "image/webp";
+  const fallbackType = "image/jpeg";
+  const ext = targetType === "image/png" ? "png" : "webp";
+  const fallbackExt = "jpg";
+
+  const baseName = file.name.replace(/\.[^.]+$/, "");
+
+  const blob: Blob | null = await new Promise((resolve) => {
+    canvas.toBlob((b) => resolve(b), targetType, 0.85);
+  });
+
+  if (blob && blob.size > 0 && blob.size < file.size) {
+    return new File([blob], `${baseName}.${ext}`, { type: targetType });
+  }
+
+  // fallback JPEG (mis. WebP encode tidak tersedia di browser lama)
+  if (targetType !== "image/png") {
+    const jpegBlob: Blob | null = await new Promise((resolve) => {
+      canvas.toBlob((b) => resolve(b), fallbackType, 0.85);
+    });
+    if (jpegBlob && jpegBlob.size > 0) {
+      return new File([jpegBlob], `${baseName}.${fallbackExt}`, { type: fallbackType });
+    }
+  }
+
+  return file;
+}
+
 export interface MediaItem {
   id: string;
   filename: string;
@@ -62,16 +131,23 @@ export function MediaPicker({
   }, [open, loadMedia]);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const original = e.target.files?.[0];
+    if (!original) return;
     setUploading(true);
     try {
+      const file = await compressImage(original);
       const formData = new FormData();
       formData.append("file", file);
       const res = await fetch("/api/admin/media", { method: "POST", body: formData });
       const data = await res.json();
       if (res.ok) {
-        toast({ title: "Upload berhasil" });
+        toast({
+          title: "Upload berhasil",
+          description:
+            file !== original
+              ? `Gambar dikompres otomatis: ${(original.size / 1024).toFixed(0)}KB → ${(file.size / 1024).toFixed(0)}KB`
+              : undefined,
+        });
         onSelected(data.media.url);
         setOpen(false);
       } else {
@@ -155,7 +231,7 @@ export function MediaPicker({
                 {uploading ? "Mengunggah..." : "Klik untuk memilih gambar"}
               </span>
               <span className="text-xs text-muted-foreground">
-                JPG, PNG, WebP, GIF, SVG • maksimal 5MB
+                JPG, PNG, WebP, GIF, SVG • maksimal 5MB • foto besar otomatis dikompres
               </span>
               <input
                 type="file"
