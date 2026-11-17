@@ -94,7 +94,8 @@ const loginRes = await fetch(BASE + "/api/auth/callback/credentials", {
   redirect: "manual",
 });
 for (const c of loginRes.headers.getSetCookie?.() || []) cookieJar.push(c.split(";")[0]);
-const sessionCookie = cookieJar.find((c) => c.startsWith("next-auth.session-token"));
+// Production (HTTPS) sets __Secure-next-auth.session-token; local sets next-auth.session-token
+const sessionCookie = cookieJar.find((c) => c.includes("next-auth.session-token"));
 check("login returns session cookie", Boolean(sessionCookie));
 
 const auth = { Cookie: cookieJar.join("; ") };
