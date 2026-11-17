@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   FolderKanban,
   Newspaper,
+  FlaskConical,
   Tags,
   Images,
   Inbox,
@@ -19,6 +20,7 @@ import { LogoMark } from "@/components/site/logo";
 const navItems = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/portfolios", label: "Portfolio", icon: FolderKanban },
+  { href: "/admin/demo", label: "Demo", icon: FlaskConical },
   { href: "/admin/journals", label: "Journal", icon: Newspaper },
   { href: "/admin/categories", label: "Kategori", icon: Tags },
   { href: "/admin/media", label: "Media Library", icon: Images },

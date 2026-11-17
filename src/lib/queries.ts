@@ -178,3 +178,45 @@ export function getRelatedJournals(categoryId: string | null, excludeId: string,
     })
   );
 }
+
+// ============================================================ DEMOS
+
+export const DEMO_SELECT = {
+  id: true,
+  title: true,
+  slug: true,
+  description: true,
+  notes: true,
+  category: true,
+  thumbnail: true,
+  demoUrl: true,
+  accessType: true,
+  technologies: true,
+  featured: true,
+  sortOrder: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
+export function getPublishedDemos(options?: { featuredOnly?: boolean; take?: number }) {
+  return safeQuery("demos", [], () =>
+    db.demo.findMany({
+      where: {
+        published: true,
+        ...(options?.featuredOnly ? { featured: true } : {}),
+      },
+      select: DEMO_SELECT,
+      orderBy: [{ featured: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }],
+      ...(options?.take ? { take: options.take } : {}),
+    })
+  );
+}
+
+export function getDemoBySlug(slug: string) {
+  return safeQuery("demo:slug", null, () =>
+    db.demo.findFirst({
+      where: { slug, published: true },
+      select: DEMO_SELECT,
+    })
+  );
+}

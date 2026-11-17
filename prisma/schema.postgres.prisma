@@ -128,6 +128,34 @@ model JournalTag {
   @@id([journalId, tagId])
 }
 
+// ============================================================ DEMOS
+// "Wadah demo" — showcase of interactive product demos.
+// demoUrl can be an internal interactive demo ("/demo/coba/kasir")
+// or an external deployment URL. accessType REQUEST = credentials
+// shared privately via WhatsApp (URL hidden from public).
+model Demo {
+  id             String   @id @default(cuid())
+  title          String
+  slug           String   @unique
+  description    String
+  notes          String?
+  category       String?
+  thumbnail      String?
+  demoUrl        String
+  accessType     String   @default("PUBLIC")
+  technologies   String   @default("[]")
+  featured       Boolean  @default(false)
+  published      Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([published, featured])
+  @@index([slug])
+}
+
 // ============================================================ MEDIA
 // Binary files (images) are stored directly in Postgres (Neon) as bytea.
 // No external object storage (Vercel Blob / S3) required.

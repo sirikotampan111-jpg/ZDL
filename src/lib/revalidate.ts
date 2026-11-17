@@ -6,16 +6,18 @@ import { revalidatePath } from "next/cache";
  * (public pages are ISR-cached with revalidate = 300).
  */
 export function revalidatePublic(
-  opts: { type: "portfolio" | "journal" | "any"; slugs?: (string | null | undefined)[] }
+  opts: { type: "portfolio" | "journal" | "demo" | "any"; slugs?: (string | null | undefined)[] }
 ) {
   const paths = new Set<string>(["/", "/sitemap.xml"]);
   if (opts.type === "portfolio" || opts.type === "any") paths.add("/portfolio");
   if (opts.type === "journal" || opts.type === "any") paths.add("/journal");
+  if (opts.type === "demo" || opts.type === "any") paths.add("/demo");
 
   for (const slug of opts.slugs ?? []) {
     if (!slug) continue;
     if (opts.type === "portfolio") paths.add(`/portfolio/${slug}`);
     else if (opts.type === "journal") paths.add(`/journal/${slug}`);
+    else if (opts.type === "demo") paths.add(`/demo/${slug}`);
   }
 
   for (const p of paths) {

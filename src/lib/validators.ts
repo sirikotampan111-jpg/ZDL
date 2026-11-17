@@ -70,6 +70,27 @@ export const journalSchema = z.object({
   tags: z.array(z.string().max(40)).max(15).default([]),
 });
 
+export const demoSchema = z.object({
+  title: z.string().min(2, "Judul minimal 2 karakter").max(200),
+  slug: z
+    .string()
+    .min(2)
+    .max(220)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug hanya boleh huruf kecil, angka, dan tanda hubung"),
+  description: z.string().min(10, "Deskripsi minimal 10 karakter").max(20000),
+  notes: z.string().max(20000).optional().nullable(),
+  category: z.string().max(100).optional().nullable(),
+  thumbnail: z.string().max(500).optional().nullable(),
+  demoUrl: z.string().min(1, "URL demo wajib diisi").max(500),
+  accessType: z.enum(["PUBLIC", "REQUEST"]).default("PUBLIC"),
+  technologies: z.array(z.string().max(60)).max(30).default([]),
+  featured: z.boolean().default(false),
+  published: z.boolean().default(true),
+  sortOrder: z.number().int().min(0).max(9999).default(0),
+  seoTitle: z.string().max(200).optional().nullable(),
+  seoDescription: z.string().max(320).optional().nullable(),
+});
+
 export const categorySchema = z.object({
   name: z.string().min(1, "Nama kategori wajib diisi").max(100),
   slug: z
@@ -93,3 +114,4 @@ export type PortfolioInput = z.infer<typeof portfolioSchema>;
 export type JournalInput = z.infer<typeof journalSchema>;
 export type ContactInput = z.infer<typeof contactSchema>;
 export type CategoryInput = z.infer<typeof categorySchema>;
+export type DemoInput = z.infer<typeof demoSchema>;

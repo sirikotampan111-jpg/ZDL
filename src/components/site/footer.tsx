@@ -6,6 +6,7 @@ import { site, waLink } from "@/lib/site";
 const footerLinks = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Services" },
+  { href: "/demo", label: "Demo" },
   { href: "/portfolio", label: "Portfolio" },
   { href: "/journal", label: "Journal" },
   { href: "/about", label: "About" },

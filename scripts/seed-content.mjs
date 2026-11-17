@@ -286,6 +286,64 @@ Kalau bisnis Anda masih mengatur jadwal lewat chat, mulailah dengan memetakan al
 ];
 
 /* ------------------------------------------------------------------ */
+/* DEMOS — "wadah demo"                                                */
+/* ------------------------------------------------------------------ */
+const demos = [
+  {
+    slug: "aplikasi-kasir",
+    title: "Demo Aplikasi Kasir (POS)",
+    category: "Aplikasi Kasir",
+    thumbnail: "/placeholders/portfolio-mobile-app.png",
+    demoUrl: "/demo/coba/kasir",
+    accessType: "PUBLIC",
+    featured: true,
+    sortOrder: 1,
+    technologies: ["Next.js", "React", "Tailwind CSS"],
+    description: `Bagaimana rasanya pemilik warung pakai kasir digital? Inilah simulasinya — aplikasi kasir lengkap yang berjalan langsung di browser Anda, memakai menu "Warung Bu Sari" sebagai data simulasi.
+
+Semua alur di dalamnya meniru versi produksi: pemilihan menu, keranjang pesanan, perhitungan pajak, pembayaran tunai dengan hitungan kembalian otomatis, sampai pencetakan struk. Perbedaannya hanya satu: di sini tidak ada data yang disimpan, jadi Anda bebas mencoba apa saja.
+
+Kalau Anda menjalankan kedai kopi, warung makan, toko kelontong, atau usaha kuliner lain, demo ini akan memberi gambaran jelas tentang apa yang Anda dapat sebelum mengambil keputusan membangun versi asli.`,
+    notes: `Coba hal-hal berikut di dalam demo:
+
+Ketuk menu untuk menambah pesanan, lalu atur jumlah dengan tombol plus-minus di keranjang. Gunakan pencarian dan tab kategori (Makanan, Minuman, Snack) untuk menemukan menu dengan cepat.
+
+Selesaikan pembayaran: klik "Bayar Sekarang", coba tombol nominal cepat (Pas, 50rb, 100rb) atau ketik nominal manual, dan lihat kembalian dihitung otomatis. Setelah lunas, struk terbit lengkap dengan nomor transaksi — persis seperti yang dicetak oleh kasir asli.
+
+Setelah selesai, klik "Transaksi Baru" dan seluruh layar kembali bersih, siap melayani pelanggan berikutnya.`,
+    seoTitle: "Demo Aplikasi Kasir — Coba Langsung di Browser | ZDL",
+    seoDescription:
+      "Simulasi aplikasi kasir ZDL: pilih menu, kelola pesanan, hitung kembalian, dan cetak struk. Jalan langsung di browser tanpa daftar atau install.",
+  },
+  {
+    slug: "sistem-booking-online",
+    title: "Demo Sistem Booking Online",
+    category: "Sistem Booking",
+    thumbnail: "/placeholders/portfolio-web-app.png",
+    demoUrl: "/demo/coba/booking",
+    accessType: "PUBLIC",
+    featured: true,
+    sortOrder: 2,
+    technologies: ["Next.js", "React", "Tailwind CSS"],
+    description: `Sistem booking online mengubah cara usaha jasa menerima pelanggan: tidak ada lagi pencatatan ganda di chat, jadwal bentrok, atau pelanggan yang terlewat. Demo ini meniru alur pelanggan barbershop — pilih layanan, pilih jadwal, isi data diri, dan terima kode konfirmasi.
+
+Anda akan merasakan langsung alur yang nantinya dialami pelanggan bisnis Anda setiap hari. Slot yang bergaris menandakan jadwal terisi — simulasi dari fitur ketersediaan di sistem asli yang membaca jadwal terapis dan kapasitas tim secara real-time.
+
+Demo ini relevan untuk barbershop, klinik, studio foto, bengkel, lapangan futsal, hingga praktik terapis. Setiap industri punya kebutuhan berbeda — dan di versi produksi, alurnya disesuaikan dengan proses kerja Anda.`,
+    notes: `Coba hal-hal berikut di dalam demo:
+
+Pilih salah satu layanan (Potong Rambut, Cukur Jenggot, Hair Wash, atau Hair Coloring) dan perhatikan estimasi durasi serta biayanya tampil otomatis.
+
+Pilih tanggal kunjungan — slot yang sudah terisi atau sudah lewat tidak bisa dipilih, persis seperti sistem asli yang mencegah double-booking.
+
+Isi nama dan nomor WhatsApp, lalu konfirmasi. Kode booking akan terbit dan — di versi asli — detail yang sama langsung dikirim ke WhatsApp pelanggan secara otomatis.`,
+    seoTitle: "Demo Sistem Booking Online — Coba Langsung | ZDL",
+    seoDescription:
+      "Simulasi sistem booking online ZDL: pilih layanan, jadwal tersedia, dan terima kode konfirmasi. Cocok untuk barbershop, klinik, studio, dan bengkel.",
+  },
+];
+
+/* ------------------------------------------------------------------ */
 
 async function main() {
   let created = 0;
@@ -353,6 +411,34 @@ async function main() {
     jCreated++;
   }
   console.log(`[seed-content] Journal ready: ${jCreated} created (target ${journals.length})`);
+
+  // ---- Demos ----
+  let dCreated = 0;
+  for (const d of demos) {
+    const existing = await db.demo.findUnique({ where: { slug: d.slug } });
+    if (existing) continue;
+
+    await db.demo.create({
+      data: {
+        title: d.title,
+        slug: d.slug,
+        description: d.description,
+        notes: d.notes,
+        category: d.category,
+        thumbnail: d.thumbnail,
+        demoUrl: d.demoUrl,
+        accessType: d.accessType,
+        technologies: JSON.stringify(d.technologies),
+        featured: d.featured,
+        published: true,
+        sortOrder: d.sortOrder,
+        seoTitle: d.seoTitle,
+        seoDescription: d.seoDescription,
+      },
+    });
+    dCreated++;
+  }
+  console.log(`[seed-content] Demos ready: ${dCreated} created (target ${demos.length})`);
   console.log("[seed-content] Done ✔");
 }
 

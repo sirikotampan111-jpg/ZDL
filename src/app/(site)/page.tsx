@@ -13,10 +13,15 @@ import { HeroVisual } from "@/components/site/hero-visual";
 import { Reveal } from "@/components/site/reveal";
 import { SectionHeading } from "@/components/site/section-heading";
 import { PortfolioCard } from "@/components/site/portfolio-card";
+import { DemoCard } from "@/components/site/demo-card";
 import { JournalCard } from "@/components/site/journal-card";
 import { CtaSection } from "@/components/site/cta-section";
 import { serviceCategories } from "@/lib/services-data";
-import { getPublishedJournals, getPublishedPortfolios } from "@/lib/queries";
+import {
+  getPublishedDemos,
+  getPublishedJournals,
+  getPublishedPortfolios,
+} from "@/lib/queries";
 import { readingTime } from "@/lib/markdown";
 import { waLink } from "@/lib/site";
 
@@ -67,9 +72,10 @@ const processSteps = [
 ];
 
 export default async function HomePage() {
-  const [featuredPortfolios, latestJournals] = await Promise.all([
+  const [featuredPortfolios, latestJournals, latestDemos] = await Promise.all([
     getPublishedPortfolios({ featuredOnly: true, take: 3 }),
     getPublishedJournals({ take: 3 }),
+    getPublishedDemos({ take: 3 }),
   ]);
 
   const portfolioFallback = featuredPortfolios.length === 0;
@@ -296,6 +302,32 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ================================================== DEMO SHOWCASE */}
+      {latestDemos.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
+          <SectionHeading
+            eyebrow="Coba Demo"
+            title="Jangan cuma baca — coba langsung"
+            description="Wadah khusus demo ZDL: simulasi aplikasi yang berfungsi penuh di browser. Rasakan dulu cara kerjanya sebelum memutuskan membangun versi asli untuk bisnis Anda."
+          />
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {latestDemos.map((d, i) => (
+              <Reveal key={d.id} delay={i * 0.06}>
+                <DemoCard item={d} />
+              </Reveal>
+            ))}
+          </div>
+          <div className="mt-10 text-center">
+            <Button asChild variant="outline" className="rounded-full px-8">
+              <Link href="/demo">
+                Jelajahi semua demo
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </section>
+      )}
 
       {/* ================================================== JOURNAL */}
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
