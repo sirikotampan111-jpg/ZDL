@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Breadcrumb } from "@/components/site/breadcrumb";
+import { PageHero } from "@/components/site/page-hero";
 import { CtaSection } from "@/components/site/cta-section";
 import { DemoFilterGrid } from "@/components/site/demo-filter-grid";
 import { getPublishedDemos } from "@/lib/queries";
@@ -51,22 +51,20 @@ export default async function DemoPage() {
 
   return (
     <>
-      <section className="relative overflow-hidden border-b border-border/60">
-        <div className="bg-grid bg-grid-fade pointer-events-none absolute inset-0" aria-hidden="true" />
-        <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-          <div className="mx-auto max-w-3xl text-center">
-            <Breadcrumb items={[{ name: "Demo" }]} />
-            <h1 className="mt-8 text-4xl font-bold tracking-tight sm:text-5xl">
-              Jangan cuma baca — <span className="text-gradient">coba langsung</span>
-            </h1>
-            <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Wadah khusus demo ZDL. Setiap demo adalah simulasi berfungsi penuh
-              dari sistem yang bisa kami bangun untuk bisnis Anda — jalan di
-              browser, tanpa daftar, tanpa install.
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        breadcrumb={[{ name: "Demo" }]}
+        eyebrow="Wadah demo"
+        title={
+          <>
+            Jangan cuma baca —{" "}
+            <span className="font-serif-accent font-normal text-primary">
+              coba langsung
+            </span>
+          </>
+        }
+        description="Setiap demo di halaman ini adalah simulasi berfungsi penuh dari sistem yang sering kami bangun untuk klien — kasir, payroll, stok gudang, booking, katalog pesan WhatsApp. Semua jalan di browser, tanpa daftar dan tanpa install."
+        meta={[`${demos.length} simulasi interaktif`, "Gratis", "Cocok dibuka dari HP"]}
+      />
 
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <DemoFilterGrid categories={categoryChips} demos={demoCards} />

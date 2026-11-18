@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Breadcrumb } from "@/components/site/breadcrumb";
+import { PageHero } from "@/components/site/page-hero";
 import { CtaSection } from "@/components/site/cta-section";
 import { PortfolioFilterGrid } from "@/components/site/portfolio-filter-grid";
 import { getPublishedPortfolios, getPortfolioCategories } from "@/lib/queries";
@@ -54,21 +54,25 @@ export default async function PortfolioPage() {
 
   return (
     <>
-      <section className="relative overflow-hidden border-b border-border/60">
-        <div className="bg-grid bg-grid-fade pointer-events-none absolute inset-0" aria-hidden="true" />
-        <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-          <div className="mx-auto max-w-3xl text-center">
-            <Breadcrumb items={[{ name: "Portfolio" }]} />
-            <h1 className="mt-8 text-4xl font-bold tracking-tight sm:text-5xl">
-              Karya yang <span className="text-gradient">bicara sendiri</span>
-            </h1>
-            <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-              16 website klien lintas industri yang pernah kami kerjakan &amp; kelola —
-              jelajahi berdasarkan kategori untuk melihat ruang lingkup karya kami.
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        breadcrumb={[{ name: "Portfolio" }]}
+        eyebrow="Portofolio klien"
+        title={
+          <>
+            Website yang{" "}
+            <span className="font-serif-accent font-normal text-primary">
+              berjalan hari ini
+            </span>
+            — bukan mockup
+          </>
+        }
+        description={`${portfolioCards.length} website klien yang live dan kami kelola sekarang — dari catering di Surabaya sampai fabrikasi tangki migas. Filter berdasarkan industri, atau buka langsung situsnya dari halaman detail project.`}
+        meta={[
+          `${portfolioCards.length} project live`,
+          `${categoryChips.length} industri`,
+          "Dikerjakan internal",
+        ]}
+      />
 
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <PortfolioFilterGrid categories={categoryChips} portfolios={portfolioCards} />

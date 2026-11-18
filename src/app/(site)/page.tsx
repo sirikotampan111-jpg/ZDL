@@ -60,13 +60,39 @@ const journalDateFmt = new Intl.DateTimeFormat("id-ID", {
 });
 
 export default async function HomePage() {
-  const [featuredPortfolios, latestJournals, latestDemos] = await Promise.all([
-    getPublishedPortfolios({ featuredOnly: true, take: 4 }),
+  const [allPortfolios, latestJournals, allDemos] = await Promise.all([
+    getPublishedPortfolios(),
     getPublishedJournals({ take: 4 }),
-    getPublishedDemos({ take: 3 }),
+    getPublishedDemos(),
   ]);
 
+  // Counts are computed from the full lists so the numbers on the page
+  // are always true — no hardcoded "7 demos" that drifts out of date.
+  const featuredPortfolios = allPortfolios
+    .filter((p) => p.featured)
+    .slice(0, 4);
+  const portfolioCount = allPortfolios.length;
+  const latestDemos = allDemos.slice(0, 3);
+  const demoCount = allDemos.length;
+
   const portfolioFallback = featuredPortfolios.length === 0;
+  // Count industries the way the portfolio does — 8 grouped categories,
+  // not the granular per-client tags (Transportasi & Logistik count as one).
+  const INDUSTRY_GROUPS: Record<string, string> = {
+    Kuliner: "Kuliner & F&B",
+    Kecantikan: "Kecantikan & Lifestyle",
+    Transportasi: "Transportasi & Logistik",
+    Logistik: "Transportasi & Logistik",
+    Edukasi: "Edukasi",
+    Properti: "Properti",
+    Interior: "Interior & Konstruksi",
+    Olahraga: "Interior & Konstruksi",
+    Organisasi: "Organisasi & Asosiasi",
+    Industri: "Industri & Energi",
+  };
+  const industryCount = new Set(
+    ZDL_CLIENTS.map((c) => INDUSTRY_GROUPS[c.industry] ?? c.industry)
+  ).size;
   const journalCards = latestJournals.map((j) => ({
     ...j,
     readingMinutes: readingTime(j.content),
@@ -108,11 +134,10 @@ export default async function HomePage() {
               <Reveal delay={0.16}>
                 <p className="mt-7 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
                   ZDL membangun dan merawat website, aplikasi, dan sistem internal
-                  untuk 16 brand — dari catering Surabaya sampai fabrikasi tangki
+                  untuk {ZDL_CLIENTS.length} brand — dari catering Surabaya sampai fabrikasi tangki
                   migas. Dikerjakan langsung oleh orang yang bisa Anda ajak bicara.
                 </p>
               </Reveal>
-
               <Reveal delay={0.24}>
                 <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                   <Button
@@ -156,7 +181,7 @@ export default async function HomePage() {
         <div className="relative border-y border-border bg-card/40">
           <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
             <p className="mono-label text-center text-muted-foreground">
-              Dipercaya 16 brand di 8 industri
+              Dipercaya {ZDL_CLIENTS.length} brand di {industryCount} industri
             </p>
           </div>
           <div className="relative mt-4 overflow-hidden pb-6 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
@@ -301,7 +326,9 @@ export default async function HomePage() {
             </div>
           )}
           <div className="mt-10 flex items-center justify-between gap-4">
-            <p className="mono-label text-muted-foreground">+ 12 project lainnya</p>
+            <p className="mono-label text-muted-foreground">
+              + {Math.max(portfolioCount - featuredPortfolios.length, 0)} project lainnya
+            </p>
             <Button asChild variant="outline" className="rounded-full px-7">
               <Link href="/portfolio">
                 Lihat semua portfolio
@@ -329,7 +356,7 @@ export default async function HomePage() {
             ))}
           </div>
           <div className="mt-10 flex items-center justify-between gap-4">
-            <p className="mono-label text-muted-foreground">7 simulasi tersedia</p>
+            <p className="mono-label text-muted-foreground">{demoCount} simulasi tersedia</p>
             <Button asChild variant="outline" className="rounded-full px-7">
               <Link href="/demo">
                 Jelajahi semua demo

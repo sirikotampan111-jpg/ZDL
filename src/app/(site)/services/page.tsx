@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Breadcrumb } from "@/components/site/breadcrumb";
+import { PageHero } from "@/components/site/page-hero";
 import { Reveal } from "@/components/site/reveal";
 import { CtaSection } from "@/components/site/cta-section";
 import { serviceCategories } from "@/lib/services-data";
@@ -41,58 +41,46 @@ export default function ServicesPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
       />
 
-      <section className="relative overflow-hidden border-b border-border/60">
-        <div className="bg-grid bg-grid-fade pointer-events-none absolute inset-0" aria-hidden="true" />
-        <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-          <div className="mx-auto max-w-3xl text-center">
-            <Breadcrumb items={[{ name: "Services" }]} />
-            <h1 className="mt-8 text-4xl font-bold tracking-tight sm:text-5xl">
-              Layanan yang saling <span className="text-gradient">terhubung</span>
-            </h1>
-            <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Website, aplikasi, sistem internal, otomasi, dan digital growth —
-              dikerjakan oleh satu tim yang memahami keseluruhan gambaran bisnis Anda.
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        breadcrumb={[{ name: "Services" }]}
+        eyebrow="Layanan"
+        title={
+          <>
+            Satu tim,{" "}
+            <span className="font-serif-accent font-normal text-primary">
+              enam lini kerja
+            </span>
+          </>
+        }
+        description="Website, aplikasi, sistem internal, otomasi, dan digital growth — semua dikerjakan internal oleh tim yang sama, tanpa subkontraktor. Kalau ada yang perlu diubah, Anda tahu harus bicara dengan siapa."
+        meta={["6 lini layanan", "Tanpa subkontraktor", "Tangerang — seluruh Indonesia"]}
+      />
 
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-        <div className="grid gap-5 lg:grid-cols-2">
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
+        <div className="border-y border-border">
           {serviceCategories.map((cat, i) => (
-            <Reveal key={cat.slug} delay={i * 0.05}>
+            <Reveal key={cat.slug} delay={i * 0.03}>
               <Link
                 href={`/services/${cat.slug}`}
-                className="group flex h-full flex-col rounded-2xl border border-border bg-card p-7 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_12px_40px_-12px_rgba(139,92,246,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="group -mx-4 grid gap-4 border-b border-border px-4 py-8 transition-colors last:border-b-0 hover:bg-muted/40 sm:mx-0 sm:grid-cols-[4rem_1fr_auto] sm:gap-6 sm:px-4"
               >
-                <div className="flex items-start justify-between">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                    <cat.icon className="h-6 w-6" />
-                  </span>
-                  <span className="font-mono text-xs text-muted-foreground/60">
-                    0{i + 1}
-                  </span>
+                <span className="mono-label pt-1.5 text-muted-foreground/70">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <h2 className="text-2xl font-semibold tracking-tight group-hover:text-primary">
+                    {cat.name}
+                  </h2>
+                  <p className="mt-1 text-sm font-medium text-primary/90">{cat.tagline}</p>
+                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                    {cat.description}
+                  </p>
+                  <p className="mt-4 font-mono text-xs leading-relaxed text-muted-foreground/70">
+                    {cat.items.map((it) => it.name).join(" · ")}
+                  </p>
                 </div>
-                <h2 className="mt-5 text-xl font-semibold tracking-tight group-hover:text-primary">
-                  {cat.name}
-                </h2>
-                <p className="mt-1 text-sm font-medium text-primary/90">{cat.tagline}</p>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  {cat.description}
-                </p>
-                <div className="mt-5 flex flex-wrap gap-1.5">
-                  {cat.items.map((item) => (
-                    <span
-                      key={item.name}
-                      className="rounded-md bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground"
-                    >
-                      {item.name}
-                    </span>
-                  ))}
-                </div>
-                <span className="mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-medium text-primary">
-                  Detail layanan
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <span className="hidden h-11 w-11 items-center justify-center rounded-full border border-border text-muted-foreground transition-all group-hover:translate-x-1 group-hover:border-primary group-hover:text-primary sm:flex">
+                  <ArrowRight className="h-4 w-4" />
                 </span>
               </Link>
             </Reveal>

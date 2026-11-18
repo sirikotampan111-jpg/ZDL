@@ -25,7 +25,7 @@ export function DemoCard({ item }: { item: DemoCardData }) {
   return (
     <Link
       href={`/demo/${item.slug}`}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_12px_40px_-12px_rgba(139,92,246,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-300 hover:border-primary/50 hover:shadow-[0_4px_20px_-6px_rgba(16,16,24,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="relative aspect-[3/2] overflow-hidden bg-muted">
         {item.thumbnail ? (
@@ -34,7 +34,7 @@ export function DemoCard({ item }: { item: DemoCardData }) {
             alt={`Tampilan demo ${item.title}`}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           />
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-2 bg-secondary text-muted-foreground">
@@ -43,12 +43,12 @@ export function DemoCard({ item }: { item: DemoCardData }) {
           </div>
         )}
         {item.category && (
-          <span className="absolute left-3 top-3 rounded-full bg-background/80 px-3 py-1 text-xs font-medium text-foreground backdrop-blur">
+          <span className="absolute left-3 top-3 rounded-md bg-background/90 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-foreground/80 backdrop-blur">
             {item.category}
           </span>
         )}
-        <span className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <ArrowUpRight className="h-4 w-4" />
+        <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-background text-foreground opacity-0 shadow-sm transition-opacity duration-300 group-hover:opacity-100">
+          <ArrowUpRight className="h-3.5 w-3.5" />
         </span>
       </div>
 
@@ -58,7 +58,7 @@ export function DemoCard({ item }: { item: DemoCardData }) {
             {item.title}
           </h3>
           <span
-            className={isRequest ? "hidden" : "inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary"}
+            className={isRequest ? "hidden" : "inline-flex shrink-0 items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-emerald-600 dark:text-emerald-400"}
           >
             {isRequest ? (
               <>

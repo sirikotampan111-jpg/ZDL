@@ -8,7 +8,7 @@ import {
   Github,
   Linkedin,
 } from "lucide-react";
-import { Breadcrumb } from "@/components/site/breadcrumb";
+import { PageHero } from "@/components/site/page-hero";
 import { ContactForm } from "@/components/site/contact-form";
 import { site, waLink } from "@/lib/site";
 
@@ -58,21 +58,20 @@ export default function ContactPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(contactJsonLd) }}
       />
 
-      <section className="relative overflow-hidden border-b border-border/60">
-        <div className="bg-grid bg-grid-fade pointer-events-none absolute inset-0" aria-hidden="true" />
-        <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-          <div className="mx-auto max-w-3xl text-center">
-            <Breadcrumb items={[{ name: "Contact" }]} />
-            <h1 className="mt-8 text-4xl font-bold tracking-tight sm:text-5xl">
-              Mari <span className="text-gradient">diskusikan project Anda</span>
-            </h1>
-            <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Isi form di bawah atau langsung chat via WhatsApp — kami membalas
-              setiap permintaan dalam 1×24 jam kerja.
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        breadcrumb={[{ name: "Contact" }]}
+        eyebrow="Kontak"
+        title={
+          <>
+            Mari diskusikan{" "}
+            <span className="font-serif-accent font-normal text-primary">
+              project Anda
+            </span>
+          </>
+        }
+        description="Isi form di bawah atau langsung chat via WhatsApp — konsultasi awal gratis dan kami membalas setiap permintaan dalam 1×24 jam kerja."
+        meta={["Respon 1×24 jam", "Senin–Sabtu 09.00–18.00 WIB", "Konsultasi awal gratis"]}
+      />
 
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
         <div className="grid gap-10 lg:grid-cols-[1fr_360px]">

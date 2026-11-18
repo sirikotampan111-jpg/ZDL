@@ -82,7 +82,10 @@ export default async function ServiceCategoryPage({
                 <Icon className="h-7 w-7" />
               </span>
               <h1 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">
-                {cat.name} — <span className="text-gradient">{cat.tagline}</span>
+                {cat.name} —{" "}
+                <span className="font-serif-accent font-normal text-primary">
+                  {cat.tagline}
+                </span>
               </h1>
               <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
                 {cat.description}

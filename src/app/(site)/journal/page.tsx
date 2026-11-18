@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Breadcrumb } from "@/components/site/breadcrumb";
+import { PageHero } from "@/components/site/page-hero";
 import { CtaSection } from "@/components/site/cta-section";
 import { JournalFilterGrid } from "@/components/site/journal-filter-grid";
 import { getPublishedJournals, getJournalCategories } from "@/lib/queries";
@@ -43,30 +43,30 @@ export default async function JournalPage() {
     readingMinutes: readingTime(j.content),
   }));
 
-  const categoryChips = categories.map((c) => ({
-    id: c.id,
-    name: c.name,
-    slug: c.slug,
-    count: c._count.journals,
-  }));
+  const categoryChips = categories
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      count: c._count.journals,
+    }))
+    .filter((c) => c.count > 0);
 
   return (
     <>
-      <section className="relative overflow-hidden border-b border-border/60">
-        <div className="bg-grid bg-grid-fade pointer-events-none absolute inset-0" aria-hidden="true" />
-        <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-          <div className="mx-auto max-w-3xl text-center">
-            <Breadcrumb items={[{ name: "Journal" }]} />
-            <h1 className="mt-8 text-4xl font-bold tracking-tight sm:text-5xl">
-              ZDL <span className="text-gradient">Journal</span>
-            </h1>
-            <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Artikel praktis tentang web development, sistem bisnis, SEO, dan
-              teknologi — ditulis dari pengalaman mengerjakan project nyata.
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        breadcrumb={[{ name: "Journal" }]}
+        eyebrow="ZDL Journal"
+        title={
+          <>
+            Catatan dari{" "}
+            <span className="font-serif-accent font-normal text-primary">lapangan</span>
+            , bukan teori
+          </>
+        }
+        description="Pengalaman membangun dan merawat website untuk 16 brand nyata — ditulis ringkas, tanpa jargon berlebihan, dan bisa langsung dipraktikkan untuk bisnis Anda."
+        meta={["Ditulis dari project nyata", "Bisa dipraktikkan"]}
+      />
 
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <JournalFilterGrid categories={categoryChips} journals={journalCards} />

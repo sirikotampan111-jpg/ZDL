@@ -396,6 +396,36 @@ Perhatikan pelanggan berstatus Menunggak — di sistem asli, pengingat WhatsApp-
     seoDescription:
       "Simulasi dashboard admin SaaS ZDL: KPI MRR dan churn, grafik pendapatan, kelola pelanggan multi-tenant, dan feed aktivitas. Coba langsung di browser.",
   },
+  {
+    slug: "katalog-pesan-whatsapp",
+    title: "Demo Katalog & Pesan WhatsApp",
+    category: "Katalog Online",
+    thumbnail: "/placeholders/demo-katalog.png",
+    demoUrl: "/demo/coba/katalog",
+    accessType: "PUBLIC",
+    featured: true,
+    sortOrder: 8,
+    technologies: ["Next.js", "React", "Tailwind CSS", "WhatsApp"],
+    description: `Bagi banyak usaha kuliner dan retail, toko online penuh belum selalu perlu — yang paling dibutuhkan dulu adalah katalog yang memudahkan orang memesan lewat WhatsApp tanpa salah paham. Demo ini meniru alur katalog-pesan yang ZDL pasang untuk brand kuliner dan retail klien.
+
+Pelanggan menjelajah menu dengan pencarian dan tab kategori, menambahkan item ke keranjang, mengisi nama serta catatan (pedas level berapa, tanpa es, dan sebagainya), lalu memilih metode: ambil sendiri di gerai atau diantar — dengan perhitungan ongkir dan gratis ongkir minimum 100 ribu.
+
+Yang jadi inti demo: saat pelanggan menekan tombol pesan, seluruh isi keranjang tersusun otomatis menjadi pesan WhatsApp yang rapi dan terstruktur — nomor item, jumlah, harga, total, nama, alamat, dan catatan. Tidak lagi menyalin-balik daftar pesanan manual di chat, dan admin toko tinggal membaca lalu mengonfirmasi.
+
+Demo ini cocok untuk kedai kopi, catering, frozen food, toko kue, distributor sembako, sampai toko online kecil yang belum butuh payment gateway.`,
+    notes: `Coba hal-hal berikut di dalam demo:
+
+Cari "gula aren" di kolom pencarian, lalu tambahkan Kopi Susu Gula Aren dua kali dengan tombol plus-minus.
+
+Pilih metode Diantar dan isi alamat — perhatikan ongkir Rp8.000 muncul otomatis, dan menjadi gratis kalau subtotal melewati Rp100.000.
+
+Isi nama dan catatan seperti "pedas level 2, tanpa es", lalu tekan Pesan via WhatsApp. Dialog akan menampilkan pesan persis seperti yang diterima admin toko: daftar item, subtotal, ongkir, total, nama, alamat, dan catatan.
+
+Coba tombol Salin teks pesanan — di versi asli, tombol Buka WhatsApp langsung mengarah ke nomor toko dengan pesan ini terisi otomatis.`,
+    seoTitle: "Demo Katalog & Pesan WhatsApp — Coba Langsung | ZDL",
+    seoDescription:
+      "Simulasi katalog online ZDL: keranjang, ambil/diantar dengan ongkir otomatis, dan pesanan tersusun rapi jadi pesan WhatsApp. Coba langsung di browser.",
+  },
 ];
 
 /* ------------------------------------------------------------------ */

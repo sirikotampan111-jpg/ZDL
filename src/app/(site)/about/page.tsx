@@ -2,16 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   MapPin,
-  Target,
-  HeartHandshake,
-  Lightbulb,
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Breadcrumb } from "@/components/site/breadcrumb";
+import { PageHero } from "@/components/site/page-hero";
 import { Reveal } from "@/components/site/reveal";
 import { CtaSection } from "@/components/site/cta-section";
-import { LogoMark } from "@/components/site/logo";
 import { site, waLink } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -75,19 +71,16 @@ const approach = [
 
 const values = [
   {
-    icon: Target,
     title: "Solusi, bukan sekadar produk",
     description:
       "Kami terbiasa menolak fitur yang tidak perlu. Yang penting sistemnya menyelesaikan masalah, bukan terlihat canggih di demo.",
   },
   {
-    icon: HeartHandshake,
     title: "Transparan sejak awal",
     description:
       "Ruang lingkup, progress, dan kendala dikomunikasikan apa adanya. Tidak ada biaya siluman, tidak ada janji yang tidak bisa kami penuhi.",
   },
   {
-    icon: Lightbulb,
     title: "Edukasi sebagai bagian dari kerja",
     description:
       "Kami menjelaskan keputusan teknis dengan bahasa yang bisa dipahami, sehingga Anda bisa mengambil keputusan bisnis yang lebih baik.",
@@ -97,24 +90,20 @@ const values = [
 export default function AboutPage() {
   return (
     <>
-      <section className="relative overflow-hidden border-b border-border/60">
-        <div className="bg-grid bg-grid-fade pointer-events-none absolute inset-0" aria-hidden="true" />
-        <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-          <Breadcrumb items={[{ name: "About" }]} />
-          <div className="mx-auto max-w-3xl text-center">
-            <LogoMark className="mx-auto h-16 w-16" />
-            <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">
-              Tentang <span className="text-gradient">ZDL</span>
-            </h1>
-            <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-              ZDL (Zheng Digital Lab) adalah digital development studio yang
-              membantu bisnis membangun fondasi digitalnya — website, aplikasi,
-              sistem internal, automation, dan digital presence — dengan proses
-              yang jelas dan hasil yang bisa dipertanggungjawabkan.
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        breadcrumb={[{ name: "Tentang" }]}
+        eyebrow="Tentang ZDL"
+        title={
+          <>
+            Studio pengembangan yang{" "}
+            <span className="font-serif-accent font-normal text-primary">
+              mengerjakan sendiri
+            </span>
+          </>
+        }
+        description="ZDL (Zheng Digital Lab) adalah digital development studio dari Tangerang yang membantu bisnis membangun fondasi digitalnya — website, aplikasi, sistem internal, automation, dan digital presence — dengan proses yang jelas dan hasil yang bisa dipertanggungjawabkan."
+        meta={["Berdiri di Tangerang", "Melayani seluruh Indonesia", "16 brand klien aktif"]}
+      />
 
       {/* Story */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
@@ -175,22 +164,26 @@ export default function AboutPage() {
       {/* Values */}
       <section className="border-y border-border/60 bg-card/40">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight">Prinsip kerja kami</h2>
-            <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-              Tiga prinsip yang memandu setiap keputusan — dari cara kami
-              merancang sistem sampai cara kami berkomunikasi dengan Anda.
+          <Reveal className="max-w-2xl">
+            <p className="mono-label flex items-center gap-3 text-muted-foreground">
+              <span className="text-primary">Prinsip</span>
+              <span className="h-px w-10 bg-border" aria-hidden="true" />
             </p>
-          </div>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            <h2 className="mt-4 text-3xl font-bold tracking-tight">Tiga hal yang kami pegang</h2>
+            <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+              Prinsip yang memandu setiap keputusan — dari cara kami merancang
+              sistem sampai cara kami berkomunikasi dengan Anda.
+            </p>
+          </Reveal>
+          <div className="mt-10 grid gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-3">
             {values.map((v, i) => (
-              <Reveal key={v.title} delay={i * 0.06}>
-                <div className="h-full rounded-2xl border border-border bg-background p-6">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <v.icon className="h-5 w-5" />
+              <Reveal key={v.title} delay={i * 0.05}>
+                <div className="h-full bg-background p-7">
+                  <span className="mono-label text-primary">
+                    {String(i + 1).padStart(2, "0")}
                   </span>
-                  <h3 className="mt-4 font-semibold tracking-tight">{v.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  <h3 className="mt-4 text-lg font-semibold tracking-tight">{v.title}</h3>
+                  <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
                     {v.description}
                   </p>
                 </div>
@@ -202,26 +195,28 @@ export default function AboutPage() {
 
       {/* Approach */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight">Our Approach</h2>
-          <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-            Tujuh tahap yang kami lalui di setiap project — skalanya
-            menyesuaikan kompleksitas, disiplinnya tidak pernah berubah.
+        <Reveal className="max-w-2xl">
+          <p className="mono-label flex items-center gap-3 text-muted-foreground">
+            <span className="text-primary">Cara kerja</span>
+            <span className="h-px w-10 bg-border" aria-hidden="true" />
           </p>
-        </div>
-        <ol className="mt-12 space-y-4">
+          <h2 className="mt-4 text-3xl font-bold tracking-tight">Tujuh tahap, dari dengar sampai rawat</h2>
+          <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+            Tahapan yang kami lalui di setiap project — skalanya menyesuaikan
+            kompleksitas, disiplinnya tidak pernah berubah.
+          </p>
+        </Reveal>
+        <ol className="mt-10 border-t border-border">
           {approach.map((a, i) => (
-            <Reveal key={a.step} delay={i * 0.04}>
-              <li className="flex gap-5 rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary/40">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 font-mono font-bold text-primary">
-                  {a.step}
+            <Reveal key={a.step} delay={i * 0.03}>
+              <li className="grid gap-2 border-b border-border py-6 sm:grid-cols-[3.5rem_9rem_1fr] sm:gap-6">
+                <span className="font-mono text-sm font-semibold text-primary">
+                  {String(i + 1).padStart(2, "0")}
                 </span>
-                <div>
-                  <h3 className="font-semibold tracking-tight">{a.name}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                    {a.description}
-                  </p>
-                </div>
+                <h3 className="font-semibold tracking-tight">{a.name}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {a.description}
+                </p>
               </li>
             </Reveal>
           ))}
@@ -245,7 +240,7 @@ export default function AboutPage() {
                   Basis kami di {site.location.city} menempatkan kami strategis
                   untuk melayani wilayah {site.location.region} dan Jakarta —
                   area dengan dinamika bisnis tertinggi di Indonesia. Untuk area
-                  Jabodetabek, pertemuan tatap mudah dapat dijadwalkan sesuai
+                  Jabodetabek, pertemuan tatap muka dapat dijadwalkan sesuai
                   tahapan project.
                 </p>
                 <p>
