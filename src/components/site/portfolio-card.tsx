@@ -11,6 +11,7 @@ export interface PortfolioCardData {
   thumbnail: string | null;
   technologies: string;
   year: number | null;
+  projectUrl?: string | null;
   category: { name: string; slug: string } | null;
 }
 
@@ -20,6 +21,14 @@ export function PortfolioCard({ item }: { item: PortfolioCardData }) {
     item.description.length > 140
       ? `${item.description.slice(0, 140).trimEnd()}…`
       : item.description;
+  const host = (() => {
+    if (!item.projectUrl) return null;
+    try {
+      return new URL(item.projectUrl).hostname;
+    } catch {
+      return null;
+    }
+  })();
 
   return (
     <Link
@@ -51,14 +60,17 @@ export function PortfolioCard({ item }: { item: PortfolioCardData }) {
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-baseline justify-between gap-2">
           <h3 className="font-semibold leading-snug tracking-tight group-hover:text-primary">
             {item.title}
           </h3>
           {item.year && (
-            <span className="shrink-0 text-xs text-muted-foreground">{item.year}</span>
+            <span className="shrink-0 font-mono text-xs text-muted-foreground">{item.year}</span>
           )}
         </div>
+        {host && (
+          <p className="mt-1 font-mono text-[11px] text-muted-foreground/80">{host}</p>
+        )}
         <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
           {excerpt}
         </p>

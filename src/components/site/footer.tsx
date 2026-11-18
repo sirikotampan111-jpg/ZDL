@@ -37,9 +37,9 @@ export function Footer() {
           <div className="lg:col-span-2">
             <Logo />
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              Web &amp; App Development. Digital solutions for modern business —
-              website, aplikasi, sistem internal, dan automation untuk bisnis di
-              Tangerang, Jakarta, Jabodetabek, dan seluruh Indonesia.
+              Studio web kecil di Tangerang. Kami membangun dan merawat
+              website, aplikasi, dan sistem internal untuk bisnis yang ingin
+              serius tampil digital — dari UMKM sampai industri.
             </p>
             <div className="mt-5 flex flex-col gap-2 text-sm text-muted-foreground">
               <a

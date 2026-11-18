@@ -39,6 +39,7 @@ export default async function PortfolioPage() {
     thumbnail: p.thumbnail,
     technologies: p.technologies,
     year: p.year,
+    projectUrl: p.projectUrl,
     category: p.category ? { name: p.category.name, slug: p.category.slug } : null,
   }));
 

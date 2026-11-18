@@ -8,6 +8,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
+  --font-serif-accent: var(--font-serif-accent);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -123,12 +125,59 @@
     @apply bg-background text-foreground;
     text-rendering: optimizeLegibility;
   }
+  /* Editorial heading voice — Space Grotesk carries all page headings */
+  h1, h2 {
+    font-family: var(--font-display), var(--font-geist-sans), sans-serif;
+  }
   ::selection {
     background: color-mix(in oklab, var(--primary) 30%, transparent);
   }
 }
 
 @layer utilities {
+  /* Serif italic accent — used sparingly on key phrases */
+  .font-serif-accent {
+    font-family: var(--font-serif-accent), Georgia, serif;
+  }
+
+  /* Monospaced meta label — dates, indexes, domains */
+  .mono-label {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  /* Film-grain noise — kills the flat "AI gradient" look */
+  .bg-noise {
+    position: relative;
+  }
+  .bg-noise::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.028;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Client marquee */
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: marquee 46s linear infinite;
+  }
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-marquee {
+      animation: none;
+    }
+  }
+
   /* Brand gradient text */
   .text-gradient {
     background-image: linear-gradient(100deg, #a78bfa 0%, #8b5cf6 40%, #22d3ee 100%);

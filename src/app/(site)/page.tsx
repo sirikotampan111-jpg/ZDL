@@ -1,22 +1,14 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  MessageCircle,
-  Sparkles,
-  ShieldCheck,
-  Gauge,
-  Code2,
-  Layers,
-} from "lucide-react";
+import { ArrowRight, MessageCircle, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HeroVisual } from "@/components/site/hero-visual";
 import { Reveal } from "@/components/site/reveal";
 import { SectionHeading } from "@/components/site/section-heading";
 import { PortfolioCard } from "@/components/site/portfolio-card";
 import { DemoCard } from "@/components/site/demo-card";
-import { JournalCard } from "@/components/site/journal-card";
 import { CtaSection } from "@/components/site/cta-section";
 import { serviceCategories } from "@/lib/services-data";
+import { ZDL_CLIENTS } from "@/lib/clients";
 import {
   getPublishedDemos,
   getPublishedJournals,
@@ -29,52 +21,48 @@ import { waLink } from "@/lib/site";
 // when content changes through the admin API (see src/app/api/admin/*).
 export const revalidate = 300;
 
-const techStack = [
-  "Next.js", "React", "TypeScript", "Node.js", "Tailwind CSS",
-  "PostgreSQL", "Prisma", "Framer Motion", "Vercel", "Google Apps Script",
-];
-
 const valueProps = [
   {
-    icon: Code2,
-    title: "Dibangun dengan teknologi modern",
+    title: "Bicara dengan yang mengerjakan",
     description:
-      "Kami memakai stack yang sama dengan produk digital global — Next.js, TypeScript, dan database relasional — sehingga website dan aplikasi Anda mudah dikembangkan, bukan sekadar jadi lalu terbengkelai.",
+      "Tidak ada lapisan account manager. Yang Anda ajak meeting adalah orang yang menulis kodenya — jadi keputusan teknis cepat dan tidak ada yang hilang di terjemahan.",
   },
   {
-    icon: Gauge,
-    title: "Cepat di jaringan mobile Indonesia",
+    title: "Dibangun untuk dikembangkan, bukan dilepas",
     description:
-      "Setiap halaman dioptimasi untuk Core Web Vitals: gambar terkompresi, JavaScript minimal, dan server rendering. Pengunjung dari HP dengan koneksi 4G tetap mendapat pengalaman yang mulus.",
+      "Stack modern (Next.js, TypeScript, PostgreSQL) dengan dokumentasi rapi. Website Anda bukan file yang dititipkan — ini aset yang bisa Anda pindahkan, kembangkan, atau audit kapan saja.",
   },
   {
-    icon: ShieldCheck,
-    title: "Anda pemilik asetnya",
+    title: "Cepat di jaringan HP Indonesia",
     description:
-      "Domain, kode, dan data berada di bawah kendali Anda. Dokumentasi jelas dan CMS internal membuat tim Anda bisa mengelola konten tanpa tergantung pada developer.",
+      "Mayoritas pengunjung Anda buka dari ponsel dengan sinyal 4G. Setiap halaman kami optimasi untuk itu: gambar terkompresi, JavaScript hemat, server rendering.",
   },
   {
-    icon: Layers,
-    title: "Satu partner untuk kebutuhan digital",
+    title: "Satu penanggung jawab sampai beres",
     description:
-      "Dari website, aplikasi, sistem internal, otomasi spreadsheet, hingga domain dan hosting — Anda tidak perlu mengoordinasikan banyak vendor yang tidak saling terhubung.",
+      "Website, domain, hosting, email bisnis, otomasi spreadsheet — satu tempat. Tidak perlu mengoordinasikan lima vendor yang saling menunjuk kalau ada masalah.",
   },
 ];
 
 const processSteps = [
-  { step: "01", name: "Understand", description: "Memahami bisnis, tujuan, dan masalah yang benar-benar perlu diselesaikan." },
-  { step: "02", name: "Plan", description: "Menyusun ruang lingkup, struktur, dan prioritas yang jelas sebelum menulis kode." },
-  { step: "03", name: "Design", description: "Merancang tampilan dan alur yang nyaman digunakan di perangkat apa pun." },
-  { step: "04", name: "Develop", description: "Membangun dengan kode yang bersih, teruji, dan terdokumentasi." },
-  { step: "05", name: "Test", description: "Memeriksa fungsi, kecepatan, dan kenyamanan penggunaan secara menyeluruh." },
-  { step: "06", name: "Deploy", description: "Memasang ke server dengan konfigurasi aman dan monitoring." },
-  { step: "07", name: "Improve", description: "Mengukur, memelihara, dan mengembangkan sesuai data penggunaan." },
+  { step: "01", name: "Dengar", description: "Ceritakan masalahnya — kami pelajari bisnis dan tujuan Anda dulu, belum bicara teknis." },
+  { step: "02", name: "Rancang", description: "Ruang lingkup, struktur, dan prioritas disepakati tertulis sebelum kode pertama." },
+  { step: "03", name: "Bangun", description: "Pengerjaan dengan progres yang bisa Anda lihat — bukan kotak hitam selama berbulan-bulan." },
+  { step: "04", name: "Uji", description: "Diperiksa di HP nyata dan jaringan nyata: kecepatan, alur, dan sudut-sudut yang jarang dicek." },
+  { step: "05", name: "Tayang", description: "Dipasang dengan konfigurasi aman, domain dan SSL beres, siap dikunjungi." },
+  { step: "06", name: "Rawat", description: "Setelah live kami tidak menghilang — pemeliharaan, perbaikan, dan pengembangan lanjutan." },
 ];
+
+const journalDateFmt = new Intl.DateTimeFormat("id-ID", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
 
 export default async function HomePage() {
   const [featuredPortfolios, latestJournals, latestDemos] = await Promise.all([
-    getPublishedPortfolios({ featuredOnly: true, take: 3 }),
-    getPublishedJournals({ take: 3 }),
+    getPublishedPortfolios({ featuredOnly: true, take: 4 }),
+    getPublishedJournals({ take: 4 }),
     getPublishedDemos({ take: 3 }),
   ]);
 
@@ -89,31 +77,44 @@ export default async function HomePage() {
       {/* ================================================== HERO */}
       <section className="relative overflow-hidden">
         <div className="bg-grid bg-grid-fade pointer-events-none absolute inset-0" aria-hidden="true" />
-        <div className="bg-brand-gradient pointer-events-none absolute left-1/2 top-[-320px] h-[560px] w-[860px] -translate-x-1/2 rounded-full opacity-[0.13] blur-3xl" aria-hidden="true" />
 
-        <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-16 sm:px-6 sm:pt-24 lg:pb-28">
-          <div className="grid items-center gap-14 lg:grid-cols-2">
-            <div>
+        <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 sm:px-6 sm:pt-20 lg:pb-24">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-7">
               <Reveal>
-                <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Web &amp; App Development • Digital Solutions
-                </span>
-              </Reveal>
-              <Reveal delay={0.08}>
-                <h1 className="mt-6 text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.4rem]">
-                  ZDL — Build Digital Solutions That{" "}
-                  <span className="text-gradient">Move Your Business Forward</span>.
-                </h1>
-              </Reveal>
-              <Reveal delay={0.16}>
-                <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-                  Websites, mobile applications, SaaS, dashboards, e-commerce, and
-                  custom digital systems built for real business needs.
+                <p className="mono-label flex flex-wrap items-center gap-x-3 gap-y-1.5 text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                    </span>
+                    Terima project baru
+                  </span>
+                  <span aria-hidden="true" className="text-border">/</span>
+                  <span>Tangerang, Indonesia</span>
                 </p>
               </Reveal>
+
+              <Reveal delay={0.08}>
+                <h1 className="mt-7 text-[2.6rem] font-bold leading-[1.06] tracking-tight sm:text-6xl lg:text-[4rem]">
+                  Website &amp; sistem bisnis yang{" "}
+                  <span className="font-serif-accent font-normal text-primary">
+                    dikerjakan sampai beres
+                  </span>
+                  .
+                </h1>
+              </Reveal>
+
+              <Reveal delay={0.16}>
+                <p className="mt-7 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+                  ZDL membangun dan merawat website, aplikasi, dan sistem internal
+                  untuk 16 brand — dari catering Surabaya sampai fabrikasi tangki
+                  migas. Dikerjakan langsung oleh orang yang bisa Anda ajak bicara.
+                </p>
+              </Reveal>
+
               <Reveal delay={0.24}>
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                   <Button
                     asChild
                     size="lg"
@@ -121,7 +122,7 @@ export default async function HomePage() {
                   >
                     <a href={waLink()} target="_blank" rel="noopener noreferrer">
                       <MessageCircle className="mr-2 h-5 w-5" />
-                      Konsultasi Project
+                      Diskusikan project
                     </a>
                   </Button>
                   <Button
@@ -130,36 +131,50 @@ export default async function HomePage() {
                     variant="outline"
                     className="rounded-full px-8 text-base font-medium"
                   >
-                    <Link href="/portfolio">
-                      Lihat Portfolio
+                    <Link href="/demo">
+                      Coba demo interaktif
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
                 </div>
               </Reveal>
+
               <Reveal delay={0.32}>
-                <p className="mt-6 text-sm text-muted-foreground">
-                  Melayani <span className="font-medium text-foreground">Tangerang, Jakarta, Jabodetabek, Banten</span>{" "}
-                  dan seluruh Indonesia.
+                <p className="mono-label mt-8 text-muted-foreground">
+                  Tangerang · Jakarta · Jabodetabek — seluruh Indonesia
                 </p>
               </Reveal>
             </div>
 
-            <HeroVisual />
+            <div className="lg:col-span-5">
+              <HeroVisual />
+            </div>
           </div>
         </div>
 
-        {/* tech strip */}
-        <div className="relative border-y border-border/60 bg-card/40">
-          <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6">
-            <p className="mb-3 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              Teknologi yang kami gunakan
+        {/* client trust strip — real sites, marquee */}
+        <div className="relative border-y border-border bg-card/40">
+          <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+            <p className="mono-label text-center text-muted-foreground">
+              Dipercaya 16 brand di 8 industri
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-              {techStack.map((tech) => (
-                <span key={tech} className="text-sm font-medium text-muted-foreground">
-                  {tech}
-                </span>
+          </div>
+          <div className="relative mt-4 overflow-hidden pb-6 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
+            <div className="animate-marquee flex w-max">
+              {[0, 1].map((half) => (
+                <div
+                  key={half}
+                  aria-hidden={half === 1}
+                  className="flex items-center gap-10 pr-10"
+                >
+                  {ZDL_CLIENTS.map((c) => (
+                    <span key={c.domain} className="flex items-baseline gap-2 whitespace-nowrap">
+                      <span className="text-sm font-medium text-foreground/85">{c.name}</span>
+                      <span className="font-mono text-xs text-muted-foreground">{c.domain}</span>
+                      <span className="ml-3 h-1 w-1 rounded-full bg-primary/40" aria-hidden="true" />
+                    </span>
+                  ))}
+                </div>
               ))}
             </div>
           </div>
@@ -169,40 +184,35 @@ export default async function HomePage() {
       {/* ================================================== SERVICES */}
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24" id="services">
         <SectionHeading
-          eyebrow="Services"
-          title="Solusi digital end-to-end untuk bisnis Anda"
-          description="Enam lini layanan yang saling terhubung — dari membangun produk digital hingga memastikan bisnis Anda ditemukan oleh pelanggan."
+          index="01"
+          eyebrow="Layanan"
+          title="Enam lini layanan, satu penanggung jawab"
+          description="Semua dikerjakan internal — tidak dilepas ke pihak ketiga. Kalau ada yang perlu diubah, Anda tahu harus bicara dengan siapa."
         />
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 border-y border-border">
           {serviceCategories.map((cat, i) => (
-            <Reveal key={cat.slug} delay={i * 0.06}>
+            <Reveal key={cat.slug} delay={i * 0.03}>
               <Link
                 href={`/services/${cat.slug}`}
-                className="group flex h-full flex-col rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_12px_40px_-12px_rgba(139,92,246,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="group -mx-4 grid gap-2.5 border-b border-border px-4 py-7 transition-colors last:border-b-0 hover:bg-muted/40 sm:mx-0 sm:grid-cols-[3.5rem_1fr_auto] sm:items-center sm:gap-6 sm:px-4"
               >
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                  <cat.icon className="h-6 w-6" />
+                <span className="mono-label text-muted-foreground/70">
+                  {String(i + 1).padStart(2, "0")}
                 </span>
-                <h3 className="mt-5 text-lg font-semibold tracking-tight">{cat.name}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {cat.tagline}
-                </p>
-                <ul className="mt-4 space-y-1.5">
-                  {cat.items.slice(0, 4).map((item) => (
-                    <li key={item.name} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span className="h-1 w-1 rounded-full bg-primary" aria-hidden="true" />
-                      {item.name}
-                    </li>
-                  ))}
-                  {cat.items.length > 4 && (
-                    <li className="pl-3 text-xs text-muted-foreground/70">
-                      +{cat.items.length - 4} lainnya
-                    </li>
-                  )}
-                </ul>
-                <span className="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-medium text-primary">
-                  Pelajari lebih lanjut
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <div>
+                  <h3 className="text-xl font-semibold tracking-tight group-hover:text-primary">
+                    {cat.name}
+                  </h3>
+                  <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                    {cat.tagline}
+                  </p>
+                  <p className="mt-2.5 font-mono text-xs text-muted-foreground/70">
+                    {cat.items.slice(0, 5).map((it) => it.name).join(" · ")}
+                    {cat.items.length > 5 ? " · …" : ""}
+                  </p>
+                </div>
+                <span className="hidden h-11 w-11 items-center justify-center rounded-full border border-border text-muted-foreground transition-all group-hover:translate-x-1 group-hover:border-primary group-hover:text-primary sm:flex">
+                  <ArrowUpRight className="h-4 w-4" />
                 </span>
               </Link>
             </Reveal>
@@ -214,23 +224,24 @@ export default async function HomePage() {
       <section className="border-y border-border/60 bg-card/40">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
           <SectionHeading
-            eyebrow="Why ZDL"
-            title="Partner teknis yang berpikir seperti pemilik bisnis"
-            description="Kami tidak hanya mengeksekusi brief — kami membantu Anda memutuskan apa yang layak dibangun dan apa yang tidak."
+            index="02"
+            eyebrow="Kenapa ZDL"
+            title="Prinsip kerja yang kami pegang"
+            description="Bukan slogan — ini cara kami bekerja setiap hari pada project klien."
           />
-          <div className="mt-12 grid gap-5 sm:grid-cols-2">
+          <div className="mt-12 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2">
             {valueProps.map((vp, i) => (
-              <Reveal key={vp.title} delay={i * 0.06}>
-                <div className="flex h-full gap-4 rounded-2xl border border-border bg-background p-6">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <vp.icon className="h-5.5 w-5.5" />
+              <Reveal key={vp.title} delay={i * 0.05}>
+                <div className="h-full bg-background p-7 sm:p-9">
+                  <span className="mono-label text-primary">
+                    {String(i + 1).padStart(2, "0")}
                   </span>
-                  <div>
-                    <h3 className="font-semibold tracking-tight">{vp.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      {vp.description}
-                    </p>
-                  </div>
+                  <h3 className="mt-4 text-lg font-semibold tracking-tight">
+                    {vp.title}
+                  </h3>
+                  <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
+                    {vp.description}
+                  </p>
                 </div>
               </Reveal>
             ))}
@@ -241,33 +252,25 @@ export default async function HomePage() {
       {/* ================================================== PROCESS */}
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
         <SectionHeading
-          eyebrow="Our Approach"
-          title="Proses yang jelas dari awal sampai terpasang"
-          description="Tujuh tahap yang sama kami terapkan pada landing page sederhana maupun sistem internal yang kompleks — skalanya berbeda, disiplinnya sama."
+          index="03"
+          eyebrow="Cara kerja"
+          title="Enam tahap, tanpa kejutan"
+          description="Dari cerita awal sampai website terawat — setiap tahap Anda tahu sedang di mana. Skala project berbeda, disiplinnya sama."
         />
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-x-12 md:grid-cols-2">
           {processSteps.map((ps, i) => (
-            <Reveal key={ps.step} delay={i * 0.05}>
-              <div className="group h-full rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40">
+            <Reveal key={ps.step} delay={i * 0.04}>
+              <div className="flex gap-6 border-t border-border py-6">
                 <span className="font-mono text-sm font-semibold text-primary">{ps.step}</span>
-                <h3 className="mt-2 font-semibold tracking-tight">{ps.name}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                  {ps.description}
-                </p>
+                <div>
+                  <h3 className="font-semibold tracking-tight">{ps.name}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                    {ps.description}
+                  </p>
+                </div>
               </div>
             </Reveal>
           ))}
-          <Reveal delay={0.35}>
-            <div className="flex h-full flex-col items-start justify-center rounded-2xl border border-primary/30 bg-primary/5 p-5">
-              <p className="font-semibold tracking-tight">Butuh partner yang prosesnya rapi?</p>
-              <Button asChild size="sm" className="mt-3 rounded-full bg-primary text-primary-foreground">
-                <a href={waLink()} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="mr-1.5 h-4 w-4" />
-                  Mulai konsultasi
-                </a>
-              </Button>
-            </div>
-          </Reveal>
         </div>
       </section>
 
@@ -275,9 +278,10 @@ export default async function HomePage() {
       <section className="border-y border-border/60 bg-card/40">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
           <SectionHeading
-            eyebrow="Featured Work"
-            title="Project pilihan dari meja kerja kami"
-            description="Contoh nyata bagaimana kami menerjemahkan kebutuhan bisnis menjadi produk digital yang bekerja. Data project di bawah ini dikelola melalui CMS ZDL."
+            index="04"
+            eyebrow="Portofolio"
+            title="Project yang berjalan, bukan mockup"
+            description="Semua website di bawah live dan kami kelola. Buka situsnya langsung dari halaman detail project."
           />
           {portfolioFallback ? (
             <p className="mt-12 rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
@@ -286,14 +290,19 @@ export default async function HomePage() {
           ) : (
             <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {featuredPortfolios.map((p, i) => (
-                <Reveal key={p.id} delay={i * 0.06}>
+                <Reveal
+                  key={p.id}
+                  delay={i * 0.05}
+                  className={i === 0 ? "sm:col-span-2 lg:col-span-2" : undefined}
+                >
                   <PortfolioCard item={p} />
                 </Reveal>
               ))}
             </div>
           )}
-          <div className="mt-10 text-center">
-            <Button asChild variant="outline" className="rounded-full px-8">
+          <div className="mt-10 flex items-center justify-between gap-4">
+            <p className="mono-label text-muted-foreground">+ 12 project lainnya</p>
+            <Button asChild variant="outline" className="rounded-full px-7">
               <Link href="/portfolio">
                 Lihat semua portfolio
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -307,19 +316,21 @@ export default async function HomePage() {
       {latestDemos.length > 0 && (
         <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
           <SectionHeading
-            eyebrow="Coba Demo"
-            title="Jangan cuma baca — coba langsung"
-            description="Wadah khusus demo ZDL: simulasi aplikasi yang berfungsi penuh di browser. Rasakan dulu cara kerjanya sebelum memutuskan membangun versi asli untuk bisnis Anda."
+            index="05"
+            eyebrow="Demo interaktif"
+            title="Coba dulu, baru percaya"
+            description="Simulasi aplikasi yang benar-benar bisa diklik — kasir, payroll, stok gudang, dan lainnya. Langsung di browser, tanpa daftar dan tanpa instal."
           />
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {latestDemos.map((d, i) => (
-              <Reveal key={d.id} delay={i * 0.06}>
+              <Reveal key={d.id} delay={i * 0.05}>
                 <DemoCard item={d} />
               </Reveal>
             ))}
           </div>
-          <div className="mt-10 text-center">
-            <Button asChild variant="outline" className="rounded-full px-8">
+          <div className="mt-10 flex items-center justify-between gap-4">
+            <p className="mono-label text-muted-foreground">7 simulasi tersedia</p>
+            <Button asChild variant="outline" className="rounded-full px-7">
               <Link href="/demo">
                 Jelajahi semua demo
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -330,32 +341,53 @@ export default async function HomePage() {
       )}
 
       {/* ================================================== JOURNAL */}
-      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
-        <SectionHeading
-          eyebrow="ZDL Journal"
-          title="Wawasan seputar teknologi & bisnis digital"
-          description="Artikel praktis tentang web development, sistem bisnis, SEO, dan teknologi — ditulis dari pengalaman mengerjakan project nyata."
-        />
-        {journalCards.length === 0 ? (
-          <p className="mt-12 rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
-            Artikel pertama akan segera dipublikasikan — kelola melalui CMS Admin.
-          </p>
-        ) : (
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {journalCards.map((j, i) => (
-              <Reveal key={j.id} delay={i * 0.06}>
-                <JournalCard item={j} />
-              </Reveal>
-            ))}
+      <section className="border-t border-border/60">
+        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
+          <SectionHeading
+            index="06"
+            eyebrow="ZDL Journal"
+            title="Catatan dari lapangan"
+            description="Yang kami pelajari dari mengerjakan website bisnis nyata — ditulis ringkas dan bisa langsung dipraktikkan."
+          />
+          {journalCards.length === 0 ? (
+            <p className="mt-12 rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
+              Artikel pertama akan segera dipublikasikan — kelola melalui CMS Admin.
+            </p>
+          ) : (
+            <div className="mt-10 border-t border-border">
+              {journalCards.map((j) => (
+                <Link
+                  key={j.id}
+                  href={`/journal/${j.slug}`}
+                  className="group -mx-4 grid gap-2 border-b border-border px-4 py-6 transition-colors hover:bg-muted/40 sm:mx-0 sm:grid-cols-[8rem_1fr_auto] sm:items-center sm:gap-8 sm:px-4"
+                >
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {j.publishedAt ? journalDateFmt.format(j.publishedAt) : "Draft"}
+                  </span>
+                  <div>
+                    <h3 className="text-lg font-semibold tracking-tight group-hover:text-primary sm:text-xl">
+                      {j.title}
+                    </h3>
+                    <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+                      {j.excerpt}
+                    </p>
+                  </div>
+                  <span className="hidden items-center gap-3 font-mono text-xs text-muted-foreground sm:flex">
+                    {j.readingMinutes} mnt
+                    <ArrowRight className="h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+          <div className="mt-10 flex justify-end">
+            <Button asChild variant="outline" className="rounded-full px-7">
+              <Link href="/journal">
+                Semua artikel
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
           </div>
-        )}
-        <div className="mt-10 text-center">
-          <Button asChild variant="outline" className="rounded-full px-8">
-            <Link href="/journal">
-              Baca ZDL Journal
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
         </div>
       </section>
 
