@@ -3,105 +3,20 @@
  * Runs during Vercel build AFTER seed-core.mjs.
  *
  * Fills the site with starting content so no page feels "empty":
- *   - 6 portfolio case studies (published, with placeholder images)
+ *   - 16 REAL portfolio client sites (see scripts/portfolio-data.mjs)
  *   - 6 journal articles     (published, full markdown, tagged)
  *
  * Upsert semantics: existing slugs are NEVER overwritten, so any edits
  * made through the CMS are safe across redeploys.
  */
 import { PrismaClient } from "@prisma/client";
+import { seedPortfolios } from "./portfolio-data.mjs";
 
 const db = new PrismaClient();
 
 /* ------------------------------------------------------------------ */
-/* PORTFOLIO                                                           */
+/* PORTFOLIO — moved to scripts/portfolio-data.mjs (16 real client sites) */
 /* ------------------------------------------------------------------ */
-const portfolios = [
-  {
-    slug: "website-company-profile-modern",
-    title: "Website Company Profile Modern",
-    categorySlug: "website",
-    description:
-      "Company profile satu halaman dengan struktur naratif yang rapi: keunggulan layanan, alur kerja, portofolio ringkas, dan CTA WhatsApp langsung. Dibangun dengan Next.js agar cepat dan ramah SEO.",
-    thumbnail: "/placeholders/portfolio-website.png",
-    client: "Usaha jasa lokal",
-    year: 2025,
-    featured: true,
-    technologies: ["Next.js", "TypeScript", "Tailwind CSS"],
-    body: [
-      { url: "/placeholders/portfolio-website.png", alt: "Tampilan halaman utama" },
-      { url: "/placeholders/portfolio-cms.png", alt: "Halaman admin CMS" },
-    ],
-  },
-  {
-    slug: "toko-online-fashion",
-    title: "Toko Online Fashion Multivendor",
-    categorySlug: "e-commerce",
-    description:
-      "Platform toko online dengan katalog produk, keranjang, checkout, dan panel admin untuk mengelola stok maupun pesanan. Fokus pada kecepatan halaman dan pengalaman mobile.",
-    thumbnail: "/placeholders/portfolio-e-commerce.png",
-    client: "Brand fashion UMKM",
-    year: 2025,
-    featured: true,
-    technologies: ["Next.js", "PostgreSQL", "Prisma", "Midtrans"],
-    body: [
-      { url: "/placeholders/portfolio-e-commerce.png", alt: "Katalog produk" },
-      { url: "/placeholders/portfolio-dashboard.png", alt: "Dashboard pesanan" },
-    ],
-  },
-  {
-    slug: "dashboard-admin-laporan",
-    title: "Dashboard Admin & Laporan Penjualan",
-    categorySlug: "dashboard",
-    description:
-      "Dashboard internal untuk memantau penjualan harian, performa produk, dan aktivitas tim. Data divisualisasikan dengan grafik interaktif dan dapat diekspor untuk laporan bulanan.",
-    thumbnail: "/placeholders/portfolio-dashboard.png",
-    client: "Distributor ritel",
-    year: 2024,
-    featured: false,
-    technologies: ["React", "Recharts", "Node.js", "PostgreSQL"],
-    body: [{ url: "/placeholders/portfolio-dashboard.png", alt: "Grafik penjualan" }],
-  },
-  {
-    slug: "aplikasi-kasir-mobile",
-    title: "Aplikasi Kasir (POS) Mobile",
-    categorySlug: "mobile-app",
-    description:
-      "Aplikasi kasir untuk usaha kuliner: input pesanan, pembagian meja, struk digital, dan rekap penjualan harian. Berjalan di Android dengan mode offline saat koneksi terputus.",
-    thumbnail: "/placeholders/portfolio-mobile-app.png",
-    client: "Jaringan kedai kopi",
-    year: 2024,
-    featured: false,
-    technologies: ["React Native", "SQLite", "REST API"],
-    body: [{ url: "/placeholders/portfolio-mobile-app.png", alt: "Layar kasir" }],
-  },
-  {
-    slug: "sistem-booking-online",
-    title: "Sistem Booking Online Usaha Jasa",
-    categorySlug: "web-app",
-    description:
-      "Sistem reservasi jadwal dengan kalender ketersediaan, konfirmasi otomatis via WhatsApp, dan panel pengelolaan pesanan. Mengurangi bolak-balik chat saat penjadwalan.",
-    thumbnail: "/placeholders/portfolio-web-app.png",
-    client: "Studio foto",
-    year: 2025,
-    featured: true,
-    technologies: ["Next.js", "Prisma", "Cron Jobs"],
-    body: [{ url: "/placeholders/portfolio-web-app.png", alt: "Kalender booking" }],
-  },
-  {
-    slug: "otomasi-laporan-whatsapp",
-    title: "Otomasi Laporan Harian via WhatsApp",
-    categorySlug: "automation",
-    description:
-      "Otomasi yang merangkum transaksi harian dari spreadsheet lalu mengirim ringkasannya ke grup WhatsApp pemilik usaha setiap malam — tanpa input manual apa pun.",
-    thumbnail: "/placeholders/portfolio-automation.png",
-    client: "Usaha retail",
-    year: 2024,
-    featured: false,
-    technologies: ["Node.js", "Google Sheets API", "WhatsApp API"],
-    body: [{ url: "/placeholders/portfolio-automation.png", alt: "Contoh laporan otomatis" }],
-  },
-];
 
 /* ------------------------------------------------------------------ */
 /* JOURNAL                                                             */
@@ -488,33 +403,8 @@ Perhatikan pelanggan berstatus Menunggak — di sistem asli, pengingat WhatsApp-
 async function main() {
   let created = 0;
 
-  // ---- Portfolio ----
-  for (const p of portfolios) {
-    const existing = await db.portfolio.findUnique({ where: { slug: p.slug } });
-    if (existing) continue;
-
-    await db.portfolio.create({
-      data: {
-        title: p.title,
-        slug: p.slug,
-        description: p.description,
-        category: { connect: { slug: p.categorySlug } },
-        thumbnail: p.thumbnail,
-        year: p.year,
-        client: p.client,
-        featured: p.featured,
-        published: true,
-        technologies: JSON.stringify(p.technologies),
-        seoTitle: `${p.title} — Portofolio ZDL`,
-        seoDescription: p.description.slice(0, 155),
-        images: {
-          create: p.body.map((img, i) => ({ url: img.url, alt: img.alt, sortOrder: i })),
-        },
-      },
-    });
-    created++;
-  }
-  console.log(`[seed-content] Portfolio ready: ${created} created (target ${portfolios.length})`);
+  // ---- Portfolio (16 real client sites) ----
+  await seedPortfolios(db);
 
   // ---- Journal ----
   let jCreated = 0;

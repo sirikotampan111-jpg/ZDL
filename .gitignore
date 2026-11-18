@@ -46,3 +46,4 @@ worklog.md
 agent-ctx/
 verification-*
 .env*
+tool-results/

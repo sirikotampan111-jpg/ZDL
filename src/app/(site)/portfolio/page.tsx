@@ -11,14 +11,14 @@ import { site } from "@/lib/site";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Portfolio — Project Web, Aplikasi & Sistem yang Pernah Kami Bangun",
+  title: "Portfolio — Website Klien ZDL Lintas Industri",
   description:
-    "Jelajahi portfolio ZDL: website company profile, aplikasi web, e-commerce, SaaS, dashboard, CMS, hingga otomasi. Lihat studi kasus dan teknologi yang kami gunakan.",
+    "Portofolio website klien ZDL lintas industri: kuliner & F&B, properti, interior & konstruksi, edukasi, transportasi & logistik, industri & energi, hingga organisasi.",
   alternates: { canonical: "/portfolio" },
   openGraph: {
     title: "Portfolio ZDL — Zheng Digital Lab",
     description:
-      "Koleksi project web development, aplikasi, dashboard, dan automation yang pernah kami kerjakan untuk kebutuhan bisnis nyata.",
+      "Koleksi website klien yang pernah ZDL kerjakan & kelola — dari catering, restoran, dan brand skincare hingga developer properti, supplier lantai olahraga, dan fabrikasi tangki migas.",
     url: `${site.url}/portfolio`,
     type: "website",
   },
@@ -42,12 +42,14 @@ export default async function PortfolioPage() {
     category: p.category ? { name: p.category.name, slug: p.category.slug } : null,
   }));
 
-  const categoryChips = categories.map((c) => ({
-    id: c.id,
-    name: c.name,
-    slug: c.slug,
-    count: c._count.portfolios,
-  }));
+  const categoryChips = categories
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      count: c._count.portfolios,
+    }))
+    .filter((c) => c.count > 0);
 
   return (
     <>
@@ -60,8 +62,8 @@ export default async function PortfolioPage() {
               Karya yang <span className="text-gradient">bicara sendiri</span>
             </h1>
             <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Setiap project di bawah ini lahir dari masalah bisnis nyata —
-              jelajahi berdasarkan kategori untuk melihat bagaimana kami bekerja.
+              16 website klien lintas industri yang pernah kami kerjakan &amp; kelola —
+              jelajahi berdasarkan kategori untuk melihat ruang lingkup karya kami.
             </p>
           </div>
         </div>
