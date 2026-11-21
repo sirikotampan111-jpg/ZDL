@@ -70,10 +70,12 @@ function handleLocale(req: NextRequest): NextResponse {
   return NextResponse.next();
 }
 
-export default function middleware(req: NextRequest, event: unknown) {
+export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   if (pathname.startsWith("/admin")) {
-    return withAuth(req, event as never);
+    // NextAuth gate. Options are the 2nd argument in the function-call form —
+    // passing the custom signIn page here is what keeps /admin/login public.
+    return withAuth(req, { pages: { signIn: "/admin/login" } });
   }
   return handleLocale(req);
 }
