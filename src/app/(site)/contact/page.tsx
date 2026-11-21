@@ -10,23 +10,30 @@ import {
 } from "lucide-react";
 import { PageHero } from "@/components/site/page-hero";
 import { ContactForm } from "@/components/site/contact-form";
-import { site, waLink } from "@/lib/site";
+import { site } from "@/lib/site";
+import { getI18n } from "@/i18n/server";
 
-export const metadata: Metadata = {
-  title: "Contact — Konsultasikan Project Web & Aplikasi Anda",
-  description:
-    "Hubungi ZDL untuk konsultasi pembuatan website, aplikasi, dashboard, dan sistem digital. WhatsApp, email, atau form konsultasi — respon cepat 1×24 jam kerja.",
-  alternates: { canonical: "/contact" },
-  openGraph: {
-    title: "Contact ZDL — Zheng Digital Lab",
-    description:
-      "Konsultasikan project digital Anda: website, aplikasi, sistem internal, automation. Respon dalam 1×24 jam kerja.",
-    url: `${site.url}/contact`,
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return {
+    title: t.contact.metaTitle,
+    description: t.contact.metaDesc,
+    alternates: {
+      canonical: "/contact",
+      languages: { "id-ID": "/contact", en: "/en/contact", "x-default": "/contact" },
+    },
+    openGraph: {
+      title: t.contact.ogTitle,
+      description: t.contact.ogDesc,
+      url: `${site.url}/contact`,
+      type: "website",
+    },
+  };
+}
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const { t } = await getI18n();
+
   const socials = [
     { href: site.social.instagram, label: "Instagram", Icon: Instagram },
     { href: site.social.github, label: "GitHub", Icon: Github },
@@ -60,26 +67,26 @@ export default function ContactPage() {
 
       <PageHero
         breadcrumb={[{ name: "Contact" }]}
-        eyebrow="Kontak"
+        eyebrow={t.contact.heroEyebrow}
         title={
           <>
-            Mari diskusikan{" "}
+            {t.contact.heroTitlePre}{" "}
             <span className="font-serif-accent font-normal text-primary">
-              project Anda
+              {t.contact.heroTitleAccent}
             </span>
           </>
         }
-        description="Isi form di bawah atau langsung chat via WhatsApp — konsultasi awal gratis dan kami membalas setiap permintaan dalam 1×24 jam kerja."
-        meta={["Respon 1×24 jam", "Senin–Sabtu 09.00–18.00 WIB", "Konsultasi awal gratis"]}
+        description={t.contact.heroDesc}
+        meta={t.contact.meta}
       />
 
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
         <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
           {/* Form */}
           <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
-            <h2 className="text-xl font-semibold tracking-tight">Form konsultasi project</h2>
+            <h2 className="text-xl font-semibold tracking-tight">{t.contact.formTitle}</h2>
             <p className="mt-1.5 text-sm text-muted-foreground">
-              Semua field bertanda <span className="text-destructive">*</span> wajib diisi.
+              {t.contact.requiredNote}
             </p>
             <div className="mt-6">
               <ContactForm />
@@ -89,10 +96,10 @@ export default function ContactPage() {
           {/* Info */}
           <aside className="space-y-5">
             <div className="rounded-2xl border border-border bg-card p-6">
-              <h3 className="font-semibold">Kontak langsung</h3>
+              <h3 className="font-semibold">{t.contact.direct}</h3>
               <div className="mt-4 space-y-4">
                 <a
-                  href={waLink()}
+                  href={`https://wa.me/${site.whatsapp.intl}?text=${encodeURIComponent(t.wa.defaultMsg)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex items-start gap-3"
@@ -114,7 +121,9 @@ export default function ContactPage() {
                     <Mail className="h-5 w-5" />
                   </span>
                   <span>
-                    <span className="block text-sm font-medium group-hover:text-primary">Email</span>
+                    <span className="block text-sm font-medium group-hover:text-primary">
+                      {t.contact.emailLabel}
+                    </span>
                     <span className="block text-sm text-muted-foreground">{site.email}</span>
                   </span>
                 </a>
@@ -123,7 +132,7 @@ export default function ContactPage() {
                     <MapPin className="h-5 w-5" />
                   </span>
                   <span>
-                    <span className="block text-sm font-medium">Lokasi</span>
+                    <span className="block text-sm font-medium">{t.contact.locationLabel}</span>
                     <span className="block text-sm text-muted-foreground">
                       {site.location.city}, {site.location.region}, Indonesia
                     </span>
@@ -134,9 +143,9 @@ export default function ContactPage() {
                     <Clock className="h-5 w-5" />
                   </span>
                   <span>
-                    <span className="block text-sm font-medium">Jam respon</span>
+                    <span className="block text-sm font-medium">{t.contact.hoursLabel}</span>
                     <span className="block text-sm text-muted-foreground">
-                      Senin–Sabtu, 09.00–18.00 WIB
+                      {t.contact.hours}
                     </span>
                   </span>
                 </div>
@@ -144,7 +153,7 @@ export default function ContactPage() {
 
               {socials.length > 0 && (
                 <div className="mt-6 border-t border-border pt-5">
-                  <p className="text-sm font-medium">Social media</p>
+                  <p className="text-sm font-medium">{t.contact.social}</p>
                   <div className="mt-3 flex gap-2">
                     {socials.map(({ href, label, Icon }) => (
                       <a
@@ -164,12 +173,9 @@ export default function ContactPage() {
             </div>
 
             <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6">
-              <h3 className="font-semibold">Sebelum menghubungi</h3>
+              <h3 className="font-semibold">{t.contact.beforeTitle}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Tidak perlu menyiapkan dokumen teknis. Cukup ceritakan: bisnis
-                Anda menjalankan apa, proses apa yang ingin diperbaiki, dan
-                hasil seperti apa yang Anda bayangkan. Kami akan memandu
-                sisanya lewat pertanyaan yang tepat.
+                {t.contact.beforeDesc}
               </p>
             </div>
           </aside>

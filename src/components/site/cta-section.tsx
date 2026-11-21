@@ -1,22 +1,35 @@
 import Link from "next/link";
 import { MessageCircle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { waLink, site } from "@/lib/site";
+import { site } from "@/lib/site";
 import { Reveal } from "@/components/site/reveal";
+import { getI18n } from "@/i18n/server";
+import { localePrefix } from "@/i18n/config";
 
-export function CtaSection({
-  title = "Punya rencana? Ceritakan saja dulu",
-  description = "Konsultasi awal tidak ribet: Anda jelaskan masalah bisnisnya, kami bilang apa yang perlu — dan apa yang tidak perlu — dibangun. Kalau cocok, baru kami mulai.",
-  primaryLabel = "Chat WhatsApp langsung",
-  secondaryLabel = "Lihat Portfolio",
-  secondaryHref = "/portfolio",
+/**
+ * Shared CTA band. Defaults come from the active dictionary; callers can
+ * override any part with explicit props (page-specific copy).
+ */
+export async function CtaSection({
+  title,
+  description,
+  primaryLabel,
+  secondaryLabel,
+  secondaryHref,
 }: {
   title?: string;
   description?: string;
   primaryLabel?: string;
-  secondaryLabel?: string;
+  secondaryLabel?: string | null;
   secondaryHref?: string | null;
 }) {
+  const { locale, t } = await getI18n();
+  const heading = title ?? t.cta.defaultTitle;
+  const body = description ?? t.cta.defaultDesc;
+  const primary = primaryLabel ?? t.cta.primary;
+  const secondary = secondaryLabel === undefined ? t.cta.secondary : secondaryLabel;
+  const secondaryUrl = secondaryHref === undefined ? localePrefix(locale, "/portfolio") : secondaryHref;
+
   return (
     <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
       <Reveal>
@@ -30,10 +43,10 @@ export function CtaSection({
                   <span>{site.whatsapp.display}</span>
                 </p>
                 <h2 className="mt-5 text-3xl font-bold tracking-tight text-balance sm:text-4xl">
-                  {title}
+                  {heading}
                 </h2>
                 <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-                  {description}
+                  {body}
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-stretch">
@@ -42,20 +55,24 @@ export function CtaSection({
                   size="lg"
                   className="rounded-full bg-primary px-8 font-semibold text-primary-foreground hover:bg-primary/90"
                 >
-                  <a href={waLink()} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={`https://wa.me/${site.whatsapp.intl}?text=${encodeURIComponent(t.wa.defaultMsg)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <MessageCircle className="mr-2 h-5 w-5" />
-                    {primaryLabel}
+                    {primary}
                   </a>
                 </Button>
-                {secondaryHref && (
+                {secondaryHref !== null && secondary && (
                   <Button
                     asChild
                     size="lg"
                     variant="outline"
                     className="rounded-full px-8 font-medium"
                   >
-                    <Link href={secondaryHref}>
-                      {secondaryLabel}
+                    <Link href={secondaryUrl}>
+                      {secondary}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>

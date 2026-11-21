@@ -1,17 +1,30 @@
 import Link from "next/link";
 import { Instagram, Github, Linkedin, MessageCircle, Mail, MapPin } from "lucide-react";
 import { Logo } from "@/components/site/logo";
-import { site, waLink } from "@/lib/site";
+import { site } from "@/lib/site";
+import { getI18n } from "@/i18n/server";
+import { localePrefix } from "@/i18n/config";
 
 const footerLinks = [
-  { href: "/", label: "Home" },
-  { href: "/services", label: "Services" },
-  { href: "/demo", label: "Demo" },
-  { href: "/portfolio", label: "Portfolio" },
-  { href: "/journal", label: "Journal" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-];
+  { href: "/", key: "home" },
+  { href: "/services", key: "services" },
+  { href: "/demo", key: "demo" },
+  { href: "/portfolio", key: "portfolio" },
+  { href: "/journal", key: "journal" },
+  { href: "/about", key: "about" },
+  { href: "/contact", key: "contact" },
+] as const;
+
+// Same labels as the navbar — proper nouns that work in both languages.
+const footerLabels: Record<(typeof footerLinks)[number]["key"], Record<"id" | "en", string>> = {
+  home: { id: "Home", en: "Home" },
+  services: { id: "Services", en: "Services" },
+  demo: { id: "Demo", en: "Demos" },
+  portfolio: { id: "Portfolio", en: "Portfolio" },
+  journal: { id: "Journal", en: "Journal" },
+  about: { id: "About", en: "About" },
+  contact: { id: "Contact", en: "Contact" },
+};
 
 const serviceLinks = [
   { href: "/services/web-development", label: "Web Development" },
@@ -22,7 +35,9 @@ const serviceLinks = [
   { href: "/services/infrastructure", label: "Infrastructure" },
 ];
 
-export function Footer() {
+export async function Footer() {
+  const { locale, t } = await getI18n();
+
   const socials = [
     { href: site.social.instagram, label: "Instagram", Icon: Instagram },
     { href: site.social.github, label: "GitHub", Icon: Github },
@@ -37,13 +52,11 @@ export function Footer() {
           <div className="lg:col-span-2">
             <Logo />
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              Studio web kecil di Tangerang. Kami membangun dan merawat
-              website, aplikasi, dan sistem internal untuk bisnis yang ingin
-              serius tampil digital — dari UMKM sampai industri.
+              {t.footer.blurb}
             </p>
             <div className="mt-5 flex flex-col gap-2 text-sm text-muted-foreground">
               <a
-                href={waLink()}
+                href={`https://wa.me/${site.whatsapp.intl}?text=${encodeURIComponent(t.wa.defaultMsg)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 transition-colors hover:text-primary"
@@ -60,7 +73,7 @@ export function Footer() {
               </a>
               <span className="inline-flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-primary" />
-                {site.location.city}, {site.location.region} — melayani seluruh Indonesia
+                {site.location.city}, {site.location.region} — {t.footer.location}
               </span>
             </div>
             {socials.length > 0 && (
@@ -82,33 +95,33 @@ export function Footer() {
           </div>
 
           {/* Links */}
-          <nav aria-label="Tautan footer">
+          <nav aria-label={t.footer.ariaNav}>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">
-              Navigasi
+              {t.footer.navTitle}
             </h3>
             <ul className="mt-4 space-y-2.5">
               {footerLinks.map((link) => (
                 <li key={link.href}>
                   <Link
-                    href={link.href}
+                    href={localePrefix(locale, link.href)}
                     className="text-sm text-muted-foreground transition-colors hover:text-primary"
                   >
-                    {link.label}
+                    {footerLabels[link.key][locale]}
                   </Link>
                 </li>
               ))}
             </ul>
           </nav>
 
-          <nav aria-label="Layanan">
+          <nav aria-label={t.footer.ariaServices}>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">
-              Layanan
+              {t.footer.servicesTitle}
             </h3>
             <ul className="mt-4 space-y-2.5">
               {serviceLinks.map((link) => (
                 <li key={link.href}>
                   <Link
-                    href={link.href}
+                    href={localePrefix(locale, link.href)}
                     className="text-sm text-muted-foreground transition-colors hover:text-primary"
                   >
                     {link.label}
@@ -121,11 +134,11 @@ export function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-sm text-muted-foreground sm:flex-row">
           <p>
-            © {new Date().getFullYear()} {site.fullName}. Seluruh hak cipta dilindungi.
+            © {new Date().getFullYear()} {site.fullName}. {t.footer.rights}
           </p>
           <p>
-            Website by{" "}
-            <Link href="/" className="font-medium text-primary hover:underline">
+            {t.footer.websiteBy}{" "}
+            <Link href={localePrefix(locale, "/")} className="font-medium text-primary hover:underline">
               ZDL
             </Link>
           </p>

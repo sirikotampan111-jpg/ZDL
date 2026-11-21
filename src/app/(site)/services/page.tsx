@@ -4,29 +4,38 @@ import { ArrowRight } from "lucide-react";
 import { PageHero } from "@/components/site/page-hero";
 import { Reveal } from "@/components/site/reveal";
 import { CtaSection } from "@/components/site/cta-section";
-import { serviceCategories } from "@/lib/services-data";
+import { getLocalizedServiceCategories } from "@/lib/services-data-en";
 import { site } from "@/lib/site";
+import { getI18n } from "@/i18n/server";
+import { localePrefix } from "@/i18n/config";
 
-export const metadata: Metadata = {
-  title: "Layanan — Jasa Web Development, Aplikasi, Sistem & Digital Growth",
-  description:
-    "Layanan ZDL: jasa pembuatan website, aplikasi mobile, SaaS, dashboard & sistem internal, otomasi Excel/Google Sheets, SEO, hingga domain & hosting. Melayani Tangerang, Jakarta, Jabodetabek, dan seluruh Indonesia.",
-  alternates: { canonical: "/services" },
-  openGraph: {
-    title: "Layanan ZDL — Web & App Development, Digital Solutions",
-    description:
-      "Enam lini layanan digital end-to-end: web development, application development, business system, productivity, digital growth, dan infrastructure.",
-    url: `${site.url}/services`,
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return {
+    title: t.servicesIndex.metaTitle,
+    description: t.servicesIndex.metaDesc,
+    alternates: {
+      canonical: "/services",
+      languages: { "id-ID": "/services", en: "/en/services", "x-default": "/services" },
+    },
+    openGraph: {
+      title: t.servicesIndex.ogTitle,
+      description: t.servicesIndex.ogDesc,
+      url: `${site.url}/services`,
+      type: "website",
+    },
+  };
+}
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const { locale, t } = await getI18n();
+  const categories = getLocalizedServiceCategories(locale);
+
   const itemListJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "Layanan ZDL — Zheng Digital Lab",
-    itemListElement: serviceCategories.map((c, i) => ({
+    name: `${site.fullName} — ${t.servicesIndex.heroEyebrow}`,
+    itemListElement: categories.map((c, i) => ({
       "@type": "ListItem",
       position: i + 1,
       name: c.name,
@@ -43,25 +52,25 @@ export default function ServicesPage() {
 
       <PageHero
         breadcrumb={[{ name: "Services" }]}
-        eyebrow="Layanan"
+        eyebrow={t.servicesIndex.heroEyebrow}
         title={
           <>
-            Satu tim,{" "}
+            {t.servicesIndex.heroTitlePre}{" "}
             <span className="font-serif-accent font-normal text-primary">
-              enam lini kerja
+              {t.servicesIndex.heroTitleAccent}
             </span>
           </>
         }
-        description="Website, aplikasi, sistem internal, otomasi, dan digital growth — semua dikerjakan internal oleh tim yang sama, tanpa subkontraktor. Kalau ada yang perlu diubah, Anda tahu harus bicara dengan siapa."
-        meta={["6 lini layanan", "Tanpa subkontraktor", "Tangerang — seluruh Indonesia"]}
+        description={t.servicesIndex.heroDesc}
+        meta={t.servicesIndex.meta}
       />
 
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
         <div className="border-y border-border">
-          {serviceCategories.map((cat, i) => (
+          {categories.map((cat, i) => (
             <Reveal key={cat.slug} delay={i * 0.03}>
               <Link
-                href={`/services/${cat.slug}`}
+                href={localePrefix(locale, `/services/${cat.slug}`)}
                 className="group -mx-4 grid gap-4 border-b border-border px-4 py-8 transition-colors last:border-b-0 hover:bg-muted/40 sm:mx-0 sm:grid-cols-[4rem_1fr_auto] sm:gap-6 sm:px-4"
               >
                 <span className="mono-label pt-1.5 text-muted-foreground/70">
@@ -89,10 +98,10 @@ export default function ServicesPage() {
       </section>
 
       <CtaSection
-        title="Belum yakin mulai dari mana?"
-        description="Itu normal. Banyak klien datang dengan masalah, bukan dengan spesifikasi. Ceritakan masalahnya — kami bantu terjemahkan menjadi solusi yang tepat dan bertahap."
-        secondaryLabel="Lihat portfolio kami"
-        secondaryHref="/portfolio"
+        title={t.servicesIndex.ctaTitle}
+        description={t.servicesIndex.ctaDesc}
+        secondaryLabel={t.servicesIndex.ctaSecondary}
+        secondaryHref={localePrefix(locale, "/portfolio")}
       />
     </>
   );

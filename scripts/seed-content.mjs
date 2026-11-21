@@ -10,7 +10,7 @@
  * made through the CMS are safe across redeploys.
  */
 import { PrismaClient } from "@prisma/client";
-import { seedPortfolios } from "./portfolio-data.mjs";
+import { seedPortfolios, enrichPortfolioTranslations } from "./portfolio-data.mjs";
 
 const db = new PrismaClient();
 
@@ -426,7 +426,95 @@ Coba tombol Salin teks pesanan — di versi asli, tombol Buka WhatsApp langsung 
     seoDescription:
       "Simulasi katalog online ZDL: keranjang, ambil/diantar dengan ongkir otomatis, dan pesanan tersusun rapi jadi pesan WhatsApp. Coba langsung di browser.",
   },
+  {
+    slug: "demo-tes-psikologi",
+    title: "Demo Tes Psikologi (Big Five & Burnout)",
+    titleEn: "Psychology Test Demo (Big Five & Burnout)",
+    category: "HR & Assessment",
+    thumbnail: "/placeholders/demo-psikologi.png",
+    demoUrl: "/demo/coba/psikologi",
+    accessType: "PUBLIC",
+    featured: true,
+    sortOrder: 0,
+    technologies: ["Next.js", "React", "Recharts"],
+    description: `Dua instrumen self-assessment yang benar-benar berfungsi dan langsung dinilai otomatis:
+
+1. Tes Kepribadian Big Five — 20 pernyataan, hasilnya berupa profil lima dimensi (Keterbukaan, Ketelitian, Ekstroversi, Keramahan, Kestabilan Emosi) dengan radar chart dan narasi yang bisa dibaca manusia biasa.
+
+2. Cek Burnout Kerja — 12 pernyataan berbasis tiga dimensi kelelahan kerja (kelelahan emosional, sinisme, efikasi profesional) dengan indikator tingkat risiko dan saran praktis.
+
+Semua jawaban diproses di browser — tidak ada data yang dikirim ke server. Versi produksinya bisa dikustomisasi untuk rekrutmen HR, survei kesejahteraan karyawan, sekolah, atau klinik: paket soal sendiri, logika penskoran sendiri, dan rekap otomatis per tim.`,
+    descriptionEn: `Two working self-assessment instruments, scored automatically:
+
+1. Big Five Personality Test — 20 statements producing a five-dimension profile (Openness, Conscientiousness, Extraversion, Agreeableness, Emotional Stability) with a radar chart and plain-language narrative.
+
+2. Work Burnout Check — 12 statements based on three burnout dimensions (emotional exhaustion, cynicism, professional efficacy) with a risk indicator and practical suggestions.
+
+Every answer is processed in the browser — nothing is sent to the server. The production version can be customized for HR recruitment, employee well-being surveys, schools, or clinics: your own question sets, your own scoring logic, and automatic per-team recaps.`,
+    notes: `Coba hal-hal berikut di dalam demo:
+
+- Jalankan Tes Kepribadian Big Five sampai selesai — perhatikan radar chart lima dimensi dan narasi yang berubah sesuai tingkat skor Anda.
+- Ulangi dengan jawaban berbeda (misal semua "Sangat setuju") — profilnya langsung berikut mengubah narasi dan penanda dominan.
+- Coba Cek Burnout Kerja — lihat indikator tingkat risiko yang muncul di hasil, lengkap dengan penjelasan per dimensi.
+- Tekan tombol WhatsApp di halaman hasil — di versi asli, tombol semacam ini bisa diarahkan ke HR atau konselor, bukan hanya ke sales.`,
+    seoTitle: "Demo Tes Psikologi Interaktif — Big Five & Cek Burnout | ZDL",
+    seoDescription:
+      "Simulasi tes psikologi interaktif ZDL: Big Five 20 pertanyaan dengan radar chart + cek burnout kerja. Dinilai otomatis, privat, langsung di browser.",
+  },
 ];
+
+/**
+ * English translations for the demo entries (used on /en pages).
+ * Enriched onto existing rows whose titleEn is still empty.
+ */
+const DEMOS_EN = {
+  "aplikasi-kasir": {
+    title: "POS Cashier App Demo",
+    description: `A working point-of-sale (POS) simulation for coffee shops, food stalls, and retail — build orders, simulate payments, and see the shift recap, the same flow local businesses use every day.`,
+  },
+  "sistem-booking-online": {
+    title: "Booking System Demo",
+    description: `An appointment & booking system simulation — pick a service, choose a time slot, register, and watch the booking land in an admin queue with status updates.`,
+  },
+  "simulasi-payment-gateway": {
+    title: "Payment Flow Demo",
+    description: `A payment flow simulation — order summary, payment method selection, and transaction status updates, structured the way a modern checkout is built.`,
+  },
+  "simulasi-payroll": {
+    title: "Payroll Demo",
+    description: `A payroll calculator simulation for Indonesian teams — salary components, BPJS & tax deductions, and take-home pay, simplified so the logic is easy to follow.`,
+  },
+  "simulasi-absensi": {
+    title: "Attendance System Demo",
+    description: `An attendance system simulation — check-in, breaks, check-out, and late detection, with a live recap for the admin.`,
+  },
+  "manajemen-stok-gudang": {
+    title: "Warehouse Stock Demo",
+    description: `A warehouse stock management simulation — goods in/out, stock levels, low-stock alerts, and a clean inventory report.`,
+  },
+  "dashboard-saas": {
+    title: "SaaS Dashboard Demo",
+    description: `A SaaS subscription dashboard simulation — tenants, plans, billing status, and the admin controls a multi-tenant product would have.`,
+  },
+  "katalog-pesan-whatsapp": {
+    title: "WhatsApp Order Catalog Demo",
+    description: `A WhatsApp ordering catalog simulation — browse a menu, build a cart, choose pickup/delivery with automatic shipping fees, and watch the order compile into a tidy WhatsApp message.`,
+  },
+};
+
+async function enrichDemoTranslations(db) {
+  let updated = 0;
+  for (const [slug, en] of Object.entries(DEMOS_EN)) {
+    const existing = await db.demo.findUnique({ where: { slug } });
+    if (!existing || existing.titleEn) continue;
+    await db.demo.update({
+      where: { slug },
+      data: { titleEn: en.title, descriptionEn: en.description },
+    });
+    updated++;
+  }
+  console.log(`[seed-content] Demo EN translations enriched: ${updated}`);
+}
 
 /* ------------------------------------------------------------------ */
 
@@ -435,6 +523,7 @@ async function main() {
 
   // ---- Portfolio (16 real client sites) ----
   await seedPortfolios(db);
+  await enrichPortfolioTranslations(db);
 
   // ---- Journal ----
   let jCreated = 0;
@@ -494,10 +583,13 @@ async function main() {
         sortOrder: d.sortOrder,
         seoTitle: d.seoTitle,
         seoDescription: d.seoDescription,
+        titleEn: d.titleEn ?? null,
+        descriptionEn: d.descriptionEn ?? null,
       },
     });
     dCreated++;
   }
+  await enrichDemoTranslations(db);
   console.log(`[seed-content] Demos ready: ${dCreated} created (target ${demos.length})`);
   console.log("[seed-content] Done ✔");
 }

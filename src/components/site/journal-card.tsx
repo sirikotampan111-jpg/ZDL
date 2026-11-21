@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatDate } from "@/lib/site";
+import { localePrefix, defaultLocale, type Locale } from "@/i18n/config";
+import { dictionaries } from "@/i18n/dictionaries";
 
 export interface JournalCardData {
   id: string;
@@ -13,10 +14,17 @@ export interface JournalCardData {
   readingMinutes: number;
 }
 
-export function JournalCard({ item }: { item: JournalCardData }) {
+export function JournalCard({ item, locale = defaultLocale }: { item: JournalCardData; locale?: Locale }) {
+  const t = dictionaries[locale];
+  const dateFmt = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
   return (
     <Link
-      href={`/journal/${item.slug}`}
+      href={localePrefix(locale, `/journal/${item.slug}`)}
       className="group flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-300 hover:border-primary/50 hover:shadow-[0_4px_20px_-6px_rgba(16,16,24,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="relative aspect-[16/9] overflow-hidden bg-muted">
@@ -44,7 +52,7 @@ export function JournalCard({ item }: { item: JournalCardData }) {
               <span aria-hidden="true" className="text-border">/</span>
             </>
           )}
-          <span>{item.readingMinutes} mnt baca</span>
+          <span>{item.readingMinutes} {t.common.menitBaca}</span>
         </div>
         <h3 className="mt-3 font-semibold leading-snug tracking-tight group-hover:text-primary">
           {item.title}
@@ -56,7 +64,7 @@ export function JournalCard({ item }: { item: JournalCardData }) {
         )}
         {item.publishedAt && (
           <p className="mt-auto pt-4 font-mono text-[11px] text-muted-foreground/80">
-            {formatDate(item.publishedAt)}
+            {item.publishedAt ? dateFmt.format(item.publishedAt) : ""}
           </p>
         )}
       </div>

@@ -14,22 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2, Send, MessageCircle } from "lucide-react";
-import { waLink } from "@/lib/site";
-
-const projectTypes = [
-  "Website (Landing Page / Company Profile)",
-  "Website (E-Commerce)",
-  "Web Application / SaaS",
-  "Mobile Application",
-  "Dashboard / Sistem Internal",
-  "Excel / Google Sheets Automation",
-  "SEO / Digital Marketing",
-  "Domain / Hosting / Infrastructure",
-  "Lainnya / Belum yakin",
-];
+import { site } from "@/lib/site";
+import { useDict } from "@/i18n/client";
 
 export function ContactForm() {
   const { toast } = useToast();
+  const t = useDict();
   const [loading, setLoading] = useState(false);
   const [projectType, setProjectType] = useState<string>("");
 
@@ -50,8 +40,8 @@ export function ContactForm() {
     // Basic client validation
     if (payload.name.length < 2 || payload.description.length < 10 || !payload.email.includes("@")) {
       toast({
-        title: "Periksa kembali isian Anda",
-        description: "Nama, email yang valid, dan deskripsi (min. 10 karakter) wajib diisi.",
+        title: t.contact.errTitle,
+        description: t.contact.errDesc,
         variant: "destructive",
       });
       return;
@@ -68,23 +58,22 @@ export function ContactForm() {
 
       if (res.ok) {
         toast({
-          title: "Pesan terkirim!",
-          description:
-            "Terima kasih! Tim ZDL akan menghubungi Anda melalui email/WhatsApp dalam 1×24 jam kerja.",
+          title: t.contact.okTitle,
+          description: t.contact.okDesc,
         });
         form.reset();
         setProjectType("");
       } else {
         toast({
-          title: "Gagal mengirim pesan",
-          description: data.error || "Terjadi kesalahan. Silakan coba lagi atau hubungi kami via WhatsApp.",
+          title: t.contact.failTitle,
+          description: data.error || t.contact.failDesc,
           variant: "destructive",
         });
       }
     } catch {
       toast({
-        title: "Gagal mengirim pesan",
-        description: "Koneksi bermasalah. Silakan coba lagi atau hubungi kami via WhatsApp.",
+        title: t.contact.failTitle,
+        description: t.contact.netDesc,
         variant: "destructive",
       });
     } finally {
@@ -97,37 +86,37 @@ export function ContactForm() {
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="name">
-            Nama <span className="text-destructive">*</span>
+            {t.contact.name} <span className="text-destructive">*</span>
           </Label>
-          <Input id="name" name="name" placeholder="Nama lengkap Anda" required maxLength={100} />
+          <Input id="name" name="name" placeholder={t.contact.namePlaceholder} required maxLength={100} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="business">Nama bisnis / perusahaan</Label>
-          <Input id="business" name="business" placeholder="Opsional" maxLength={150} />
+          <Label htmlFor="business">{t.contact.business}</Label>
+          <Input id="business" name="business" placeholder={t.contact.businessPlaceholder} maxLength={150} />
         </div>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="email">
-            Email <span className="text-destructive">*</span>
+            {t.contact.email} <span className="text-destructive">*</span>
           </Label>
           <Input id="email" name="email" type="email" placeholder="nama@email.com" required maxLength={200} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="whatsapp">Nomor WhatsApp</Label>
-          <Input id="whatsapp" name="whatsapp" type="tel" placeholder="08xx-xxxx-xxxx" maxLength={20} />
+          <Label htmlFor="whatsapp">{t.contact.whatsapp}</Label>
+          <Input id="whatsapp" name="whatsapp" type="tel" placeholder={t.contact.whatsappPlaceholder} maxLength={20} />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="projectType">Jenis project</Label>
+        <Label htmlFor="projectType">{t.contact.projectType}</Label>
         <Select value={projectType} onValueChange={setProjectType}>
           <SelectTrigger id="projectType" className="w-full">
-            <SelectValue placeholder="Pilih jenis project yang Anda butuhkan" />
+            <SelectValue placeholder={t.contact.projectTypePlaceholder} />
           </SelectTrigger>
           <SelectContent>
-            {projectTypes.map((type) => (
+            {t.contact.projectTypes.map((type) => (
               <SelectItem key={type} value={type}>
                 {type}
               </SelectItem>
@@ -138,12 +127,12 @@ export function ContactForm() {
 
       <div className="space-y-2">
         <Label htmlFor="description">
-          Deskripsi kebutuhan project <span className="text-destructive">*</span>
+          {t.contact.description} <span className="text-destructive">*</span>
         </Label>
         <Textarea
           id="description"
           name="description"
-          placeholder="Ceritakan konteks bisnis Anda dan apa yang ingin dibangun — semakin jelas konteksnya, semakin tepat rekomendasi kami."
+          placeholder={t.contact.descriptionPlaceholder}
           rows={6}
           required
           minLength={10}
@@ -160,27 +149,29 @@ export function ContactForm() {
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Mengirim...
+              {t.contact.sending}
             </>
           ) : (
             <>
               <Send className="mr-2 h-4 w-4" />
-              Discuss Your Project
+              {t.contact.submit}
             </>
           )}
         </Button>
         <Button asChild variant="outline" className="flex-1 rounded-full">
-          <a href={waLink()} target="_blank" rel="noopener noreferrer">
+          <a
+            href={`https://wa.me/${site.whatsapp.intl}?text=${encodeURIComponent(t.wa.defaultMsg)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <MessageCircle className="mr-2 h-4 w-4 text-[#25D366]" />
-            Konsultasi via WhatsApp
+            {t.contact.waCta}
           </a>
         </Button>
       </div>
 
       <p className="text-xs leading-relaxed text-muted-foreground">
-        Dengan mengirim form ini, Anda setuju untuk dihubungi oleh tim ZDL
-        terkait kebutuhan project Anda. Data Anda hanya digunakan untuk keperluan
-        komunikasi dan tidak dibagikan ke pihak ketiga.
+        {t.contact.privacy}
       </p>
     </form>
   );

@@ -10,6 +10,9 @@ import { CtaSection } from "@/components/site/cta-section";
 import { getDemoBySlug, getPublishedDemos } from "@/lib/queries";
 import { parseJsonArray } from "@/lib/markdown";
 import { waLink, site } from "@/lib/site";
+import { getI18n } from "@/i18n/server";
+import { fmt, localePrefix } from "@/i18n/config";
+import { pickDescription, pickTitle } from "@/i18n/content";
 
 // Content is CMS-managed — cached via ISR and revalidated on-demand
 // when demo entries change through the admin API (see src/app/api/admin/demo).
@@ -27,13 +30,21 @@ export async function generateMetadata(
   const item = await getDemoBySlug(slug);
   if (!item) return {};
 
-  const title = item.seoTitle || `${item.title} — Demo Interaktif ZDL`;
-  const description = item.seoDescription || `${item.description.slice(0, 150)}…`;
+  const { locale, t } = await getI18n();
+  const title = pickTitle(item, locale);
+  const description = pickDescription(item, locale).slice(0, 150) + "…";
 
   return {
-    title,
+    title: item.seoTitle || fmt(t.demoDetail.seoTitle, { name: title }),
     description,
-    alternates: { canonical: `/demo/${item.slug}` },
+    alternates: {
+      canonical: `/demo/${item.slug}`,
+      languages: {
+        "id-ID": `/demo/${item.slug}`,
+        en: `/en/demo/${item.slug}`,
+        "x-default": `/demo/${item.slug}`,
+      },
+    },
     openGraph: {
       title,
       description,
@@ -56,9 +67,12 @@ export default async function DemoDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const { locale, t } = await getI18n();
   const item = await getDemoBySlug(slug);
   if (!item) notFound();
 
+  const title = pickTitle(item, locale);
+  const description = pickDescription(item, locale);
   const techs = parseJsonArray(item.technologies);
   const all = await getPublishedDemos();
   const related = all
@@ -73,8 +87,8 @@ export default async function DemoDetailPage({
   const softwareJsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: item.title,
-    description: item.seoDescription || item.description,
+    name: title,
+    description: item.seoDescription || description,
     url: `${site.url}/demo/${item.slug}`,
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
@@ -93,9 +107,9 @@ export default async function DemoDetailPage({
       <article className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <Breadcrumb
           items={[
-            { name: "Demo", href: "/demo" },
-            ...(item.category ? [{ name: item.category, href: `/demo` }] : []),
-            { name: item.title },
+            { name: locale === "en" ? "Demos" : "Demo", href: localePrefix(locale, "/demo") },
+            ...(item.category ? [{ name: item.category, href: localePrefix(locale, "/demo") }] : []),
+            { name: title },
           ]}
         />
 
@@ -110,20 +124,20 @@ export default async function DemoDetailPage({
             {isRequest ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">
                 <Lock className="h-3.5 w-3.5" />
-                Akses via WhatsApp
+                {t.demoDetail.accessWA}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                 <MousePointerClick className="h-3.5 w-3.5" />
-                Bisa dicoba langsung
+                {t.demoDetail.accessPublic}
               </span>
             )}
           </div>
           <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
-            {item.title}
+            {title}
           </h1>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            {item.description.split("\n\n")[0]}
+            {description.split("\n\n")[0]}
           </p>
         </header>
 
@@ -132,7 +146,7 @@ export default async function DemoDetailPage({
           <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-2xl border border-border bg-muted">
             <Image
               src={item.thumbnail}
-              alt={`Tampilan demo ${item.title}`}
+              alt={fmt(t.demoDetail.thumbAlt, { name: title })}
               fill
               priority
               sizes="(max-width: 1152px) 100vw, 1152px"
@@ -150,12 +164,12 @@ export default async function DemoDetailPage({
               className="rounded-full bg-primary text-primary-foreground"
             >
               <a
-                href={waLink(`Halo ZDL, saya ingin minta akses demo "${item.title}". Terima kasih.`)}
+                href={waLink(fmt(t.demoDetail.waReq, { name: title }))}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <MessageCircle className="mr-2 h-5 w-5" />
-                Minta akses demo via WhatsApp
+                {t.demoDetail.requestAccess}
               </a>
             </Button>
           ) : isInternal ? (
@@ -164,9 +178,9 @@ export default async function DemoDetailPage({
               size="lg"
               className="rounded-full bg-primary text-primary-foreground"
             >
-              <Link href={item.demoUrl}>
+              <Link href={localePrefix(locale, item.demoUrl)}>
                 <MousePointerClick className="mr-2 h-5 w-5" />
-                Coba demo sekarang
+                {t.demoDetail.tryNow}
               </Link>
             </Button>
           ) : (
@@ -177,23 +191,21 @@ export default async function DemoDetailPage({
             >
               <a href={item.demoUrl} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="mr-2 h-5 w-5" />
-                Buka demo sekarang
+                {t.demoDetail.openNow}
               </a>
             </Button>
           )}
           <p className="text-sm text-muted-foreground">
-            {isRequest
-              ? "Demo ini butuh kredensial — kredensial dibagikan lewat WhatsApp."
-              : "Demo berjalan di browser, tidak perlu daftar atau install."}
+            {isRequest ? t.demoDetail.reqNote : t.demoDetail.publicNote}
           </p>
         </div>
 
         {/* Body */}
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_320px]">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight">Tentang demo ini</h2>
+            <h2 className="text-xl font-semibold tracking-tight">{t.demoDetail.about}</h2>
             <div className="mt-4 space-y-4 text-base leading-relaxed text-muted-foreground">
-              {item.description.split("\n\n").map((para, i) => (
+              {description.split("\n\n").map((para, i) => (
                 <p key={i}>{para}</p>
               ))}
             </div>
@@ -202,7 +214,7 @@ export default async function DemoDetailPage({
               <div className="mt-10">
                 <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
                   <FlaskConical className="h-5 w-5 text-primary" />
-                  Yang bisa Anda coba
+                  {t.demoDetail.tryThese}
                 </h2>
                 <div className="mt-4 space-y-4 text-base leading-relaxed text-muted-foreground">
                   {item.notes.split("\n\n").map((para, i) => (
@@ -213,9 +225,9 @@ export default async function DemoDetailPage({
             )}
 
             <p className="mt-8 rounded-xl border border-dashed border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-              Catatan: semua data pada demo ini adalah <strong className="text-foreground">data simulasi</strong> —
-              tidak ada informasi asli yang disimpan. Versi produksi dibuat khusus
-              sesuai kebutuhan bisnis Anda.
+              {t.demoDetail.simNotePre}{" "}
+              <strong className="text-foreground">{t.demoDetail.simNoteBold}</strong>{" "}
+              {t.demoDetail.simNotePost}
             </p>
           </div>
 
@@ -224,16 +236,16 @@ export default async function DemoDetailPage({
             <div className="rounded-2xl border border-border bg-card p-6">
               <h3 className="flex items-center gap-2 font-semibold">
                 <Layers className="h-4 w-4 text-primary" />
-                Teknologi
+                {t.demoDetail.tech}
               </h3>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {techs.length > 0 ? (
-                  techs.map((t) => (
+                  techs.map((tech) => (
                     <span
-                      key={t}
+                      key={tech}
                       className="rounded-md bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground"
                     >
-                      {t}
+                      {tech}
                     </span>
                   ))
                 ) : (
@@ -244,14 +256,18 @@ export default async function DemoDetailPage({
               <dl className="mt-6 space-y-3 border-t border-border pt-5 text-sm">
                 {item.category && (
                   <div>
-                    <dt className="text-xs uppercase tracking-wider text-muted-foreground">Kategori</dt>
+                    <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+                      {t.demoDetail.category}
+                    </dt>
                     <dd className="mt-0.5 font-medium">{item.category}</dd>
                   </div>
                 )}
                 <div>
-                  <dt className="text-xs uppercase tracking-wider text-muted-foreground">Tipe akses</dt>
+                  <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+                    {t.demoDetail.accessType}
+                  </dt>
                   <dd className="mt-0.5 font-medium">
-                    {isRequest ? "Via WhatsApp (kredensial)" : "Publik — langsung dicoba"}
+                    {isRequest ? t.demoDetail.accessWAValue : t.demoDetail.accessPublicValue}
                   </dd>
                 </div>
               </dl>
@@ -259,22 +275,22 @@ export default async function DemoDetailPage({
               <div className="mt-6 space-y-2.5 border-t border-border pt-5">
                 <Button asChild variant="outline" className="w-full rounded-full">
                   <a
-                    href={waLink(`Halo ZDL, saya melihat demo "${item.title}". Saya ingin membangun sistem serupa untuk bisnis saya.`)}
+                    href={waLink(fmt(t.demoDetail.waBuild, { name: title }))}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Bangun versi asli untuk saya
+                    {t.demoDetail.buildReal}
                   </a>
                 </Button>
               </div>
             </div>
 
             <Link
-              href="/demo"
+              href={localePrefix(locale, "/demo")}
               className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary"
             >
               <ArrowLeft className="h-4 w-4" />
-              Kembali ke galeri demo
+              {t.demoDetail.back}
             </Link>
           </aside>
         </div>
@@ -283,18 +299,18 @@ export default async function DemoDetailPage({
         {relatedItems.length > 0 && (
           <section className="mt-16 border-t border-border pt-12">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold tracking-tight">Demo lainnya</h2>
+              <h2 className="text-2xl font-bold tracking-tight">{t.demoDetail.more}</h2>
               <Link
-                href="/demo"
+                href={localePrefix(locale, "/demo")}
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
               >
-                Semua demo
+                {t.demoDetail.viewAll}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
             <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {relatedItems.map((d) => (
-                <DemoCard key={d.id} item={d} />
+                <DemoCard key={d.id} item={d} locale={locale} />
               ))}
             </div>
           </section>
@@ -302,10 +318,10 @@ export default async function DemoDetailPage({
       </article>
 
       <CtaSection
-        title="Dari simulasi ke sistem nyata"
-        description="Yang Anda coba di sini hanya permukaannya. Versi produksinya mencakup data bisnis Anda, laporan, keamanan, dan integrasi — dibangun sesuai alur kerja Anda."
-        secondaryLabel="Pelajari layanan kami"
-        secondaryHref="/services"
+        title={t.demoDetail.ctaTitle}
+        description={t.demoDetail.ctaDesc}
+        secondaryLabel={t.demoDetail.ctaSecondary}
+        secondaryHref={localePrefix(locale, "/services")}
       />
     </>
   );

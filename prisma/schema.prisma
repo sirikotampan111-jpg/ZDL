@@ -38,8 +38,11 @@ model PortfolioCategory {
 model Portfolio {
   id           String           @id @default(cuid())
   title        String
+  titleEn      String?
   slug         String           @unique
   description  String
+  excerptEn    String?
+  descriptionEn String?
   categoryId   String?
   category     PortfolioCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   thumbnail    String?
@@ -136,8 +139,10 @@ model JournalTag {
 model Demo {
   id             String   @id @default(cuid())
   title          String
+  titleEn        String?
   slug           String   @unique
   description    String
+  descriptionEn  String?
   notes          String?
   category       String?
   thumbnail      String?

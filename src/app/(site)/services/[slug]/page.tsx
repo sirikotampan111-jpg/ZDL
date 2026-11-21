@@ -6,25 +6,38 @@ import { Button } from "@/components/ui/button";
 import { Breadcrumb } from "@/components/site/breadcrumb";
 import { Reveal } from "@/components/site/reveal";
 import { CtaSection } from "@/components/site/cta-section";
-import { serviceCategories, getServiceCategory } from "@/lib/services-data";
+import { getLocalizedServiceCategory, getLocalizedServiceCategories } from "@/lib/services-data-en";
 import { waLink, site } from "@/lib/site";
+import { getI18n } from "@/i18n/server";
+import { fmt, localePrefix } from "@/i18n/config";
 
 export function generateStaticParams() {
-  return serviceCategories.map((c) => ({ slug: c.slug }));
+  return getLocalizedServiceCategories("id").map((c) => ({ slug: c.slug }));
 }
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
   const { slug } = await params;
-  const cat = getServiceCategory(slug);
+  const { locale, t } = await getI18n();
+  const cat = getLocalizedServiceCategory(slug, locale);
   if (!cat) return {};
 
-  const title = `${cat.name} — Jasa ${cat.shortName} Profesional`;
+  const title =
+    locale === "en"
+      ? `${cat.name} — Professional ${cat.shortName} Services`
+      : `${cat.name} — Jasa ${cat.shortName} Profesional`;
   return {
     title,
     description: cat.description.slice(0, 160),
-    alternates: { canonical: `/services/${cat.slug}` },
+    alternates: {
+      canonical: `/services/${cat.slug}`,
+      languages: {
+        "id-ID": `/services/${cat.slug}`,
+        en: `/en/services/${cat.slug}`,
+        "x-default": `/services/${cat.slug}`,
+      },
+    },
     openGraph: {
       title,
       description: cat.description.slice(0, 160),
@@ -41,16 +54,17 @@ export default async function ServiceCategoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const cat = getServiceCategory(slug);
+  const { locale, t } = await getI18n();
+  const cat = getLocalizedServiceCategory(slug, locale);
   if (!cat) notFound();
 
   const Icon = cat.icon;
-  const others = serviceCategories.filter((c) => c.slug !== cat.slug);
+  const others = getLocalizedServiceCategories(locale).filter((c) => c.slug !== cat.slug);
 
   const serviceJsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: `Jasa ${cat.name}`,
+    name: cat.name,
     serviceType: cat.name,
     description: cat.description,
     provider: { "@id": `${site.url}/#organization` },
@@ -75,7 +89,7 @@ export default async function ServiceCategoryPage({
       <section className="relative overflow-hidden border-b border-border/60">
         <div className="bg-grid bg-grid-fade pointer-events-none absolute inset-0" aria-hidden="true" />
         <div className="relative mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-          <Breadcrumb items={[{ name: "Services", href: "/services" }, { name: cat.name }]} />
+          <Breadcrumb items={[{ name: "Services", href: localePrefix(locale, "/services") }, { name: cat.name }]} />
           <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
               <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -92,8 +106,12 @@ export default async function ServiceCategoryPage({
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <Button asChild size="lg" className="rounded-full bg-primary font-semibold text-primary-foreground">
-                  <a href={waLink(`Halo ZDL, saya tertarik dengan layanan ${cat.name}. Bisa konsultasi dulu?`)} target="_blank" rel="noopener noreferrer">
-                    Konsultasikan Project Anda
+                  <a
+                    href={waLink(fmt(t.serviceDetail.waCategory, { name: cat.name }))}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t.serviceDetail.consultCta}
                   </a>
                 </Button>
               </div>
@@ -102,7 +120,7 @@ export default async function ServiceCategoryPage({
               <div className="rounded-2xl border border-border bg-card p-6">
                 <h2 className="flex items-center gap-2 font-semibold">
                   <Briefcase className="h-4 w-4 text-primary" />
-                  Cocok untuk
+                  {t.serviceDetail.fitFor}
                 </h2>
                 <ul className="mt-4 space-y-3">
                   {cat.useCases.map((uc) => (
@@ -121,7 +139,7 @@ export default async function ServiceCategoryPage({
       {/* Service items */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Lingkup layanan {cat.name}
+          {fmt(t.serviceDetail.scope, { name: cat.name })}
         </h2>
         <div className="mt-8 grid gap-5 lg:grid-cols-2">
           {cat.items.map((item, i) => (
@@ -130,7 +148,9 @@ export default async function ServiceCategoryPage({
                 <h3 className="text-lg font-semibold tracking-tight text-primary">{item.name}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
                 <div className="mt-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-foreground">Manfaat</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                    {t.serviceDetail.benefits}
+                  </p>
                   <ul className="mt-2 space-y-1.5">
                     {item.benefits.map((b) => (
                       <li key={b} className="flex gap-2 text-sm text-muted-foreground">
@@ -141,7 +161,9 @@ export default async function ServiceCategoryPage({
                   </ul>
                 </div>
                 <div className="mt-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-foreground">Contoh penggunaan</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                    {t.serviceDetail.examples}
+                  </p>
                   <ul className="mt-2 space-y-1.5">
                     {item.examples.map((e) => (
                       <li key={e} className="flex gap-2 text-sm text-muted-foreground">
@@ -152,12 +174,12 @@ export default async function ServiceCategoryPage({
                   </ul>
                 </div>
                 <a
-                  href={waLink(`Halo ZDL, saya ingin konsultasi mengenai ${item.name}.`)}
+                  href={waLink(fmt(t.serviceDetail.waItem, { name: item.name }))}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-medium text-primary hover:underline"
                 >
-                  Konsultasi {item.name}
+                  {fmt(t.serviceDetail.consult, { name: item.name })}
                   <ArrowRight className="h-4 w-4" />
                 </a>
               </article>
@@ -169,12 +191,12 @@ export default async function ServiceCategoryPage({
       {/* Other services */}
       <section className="border-t border-border/60 bg-card/40">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-          <h2 className="text-xl font-bold tracking-tight">Layanan lainnya</h2>
+          <h2 className="text-xl font-bold tracking-tight">{t.serviceDetail.others}</h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {others.map((o) => (
               <Link
                 key={o.slug}
-                href={`/services/${o.slug}`}
+                href={localePrefix(locale, `/services/${o.slug}`)}
                 className="group rounded-xl border border-border bg-background p-4 transition-colors hover:border-primary/40"
               >
                 <o.icon className="h-5 w-5 text-primary" />
@@ -187,10 +209,10 @@ export default async function ServiceCategoryPage({
       </section>
 
       <CtaSection
-        title={`Butuh ${cat.name.toLowerCase()} untuk bisnis Anda?`}
-        description="Ceritakan kebutuhan Anda lewat WhatsApp — kami bantu petakan solusi yang paling sesuai tanpa kewajiban apa pun."
-        secondaryLabel="Kembali ke semua layanan"
-        secondaryHref="/services"
+        title={fmt(t.serviceDetail.ctaTitle, { name: cat.name.toLowerCase() })}
+        description={t.serviceDetail.ctaDesc}
+        secondaryLabel={t.serviceDetail.ctaSecondary}
+        secondaryHref={localePrefix(locale, "/services")}
       />
     </>
   );

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import { Lock, CheckCheck } from "lucide-react";
+import { useLocale } from "@/i18n/client";
 
 /**
  * Hero composition built from REAL work: the actual cover of a live client
@@ -11,6 +12,8 @@ import { Lock, CheckCheck } from "lucide-react";
  */
 export function HeroVisual() {
   const reduce = useReducedMotion();
+  const en = useLocale() === "en";
+  const statAlt = en ? "16 active clients · 8 industries" : "16 klien aktif · 8 industri";
 
   return (
     <div className="relative mx-auto w-full max-w-lg lg:max-w-none" aria-hidden="true">
@@ -34,7 +37,7 @@ export function HeroVisual() {
         <div className="relative aspect-[3/2] overflow-hidden rounded-b-xl">
           <Image
             src="/brand/showcase-migasstell.png"
-            alt="Website Migas Stell — project klien ZDL yang sedang berjalan"
+            alt={en ? "Migas Stell website — a live ZDL client project" : "Website Migas Stell — project klien ZDL yang sedang berjalan"}
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 520px"
@@ -42,7 +45,9 @@ export function HeroVisual() {
           />
         </div>
         <div className="absolute bottom-3 left-3 rounded-md border border-border bg-background/85 px-2.5 py-1 backdrop-blur">
-          <span className="mono-label text-muted-foreground">Live — project klien</span>
+          <span className="mono-label text-muted-foreground">
+            {en ? "Live — client project" : "Live — project klien"}
+          </span>
         </div>
       </motion.div>
 
@@ -56,7 +61,7 @@ export function HeroVisual() {
         <div className="relative aspect-[3/2]">
           <Image
             src="/brand/showcase-livia.png"
-            alt="Website Livia Real Estate — project klien ZDL"
+            alt={en ? "Livia Real Estate website — a ZDL client project" : "Website Livia Real Estate — project klien ZDL"}
             fill
             sizes="220px"
             className="object-cover"
@@ -75,10 +80,10 @@ export function HeroVisual() {
         className="absolute -left-3 top-8 hidden rounded-lg border border-border bg-card/95 px-4 py-3 shadow-xl backdrop-blur sm:block lg:-left-10"
       >
         <p className="font-display text-2xl font-bold leading-none">16</p>
-        <p className="mono-label mt-1.5 text-muted-foreground">Klien aktif · 8 industri</p>
+        <p className="mono-label mt-1.5 text-muted-foreground">{statAlt}</p>
         <span className="mt-2 inline-flex items-center gap-1 text-[11px] text-emerald-500">
           <CheckCheck className="h-3 w-3" />
-          Semua live &amp; dikelola
+          {en ? "All live & managed" : "Semua live & dikelola"}
         </span>
       </motion.div>
     </div>

@@ -16,7 +16,9 @@ import {
   getPublishedJournals,
 } from "@/lib/queries";
 import { extractToc, readingTime } from "@/lib/markdown";
-import { formatDate, site } from "@/lib/site";
+import { site } from "@/lib/site";
+import { getI18n } from "@/i18n/server";
+import { fmt, localePrefix } from "@/i18n/config";
 
 // Content is CMS-managed — cached via ISR and revalidated on-demand
 // when content changes through the admin API (see src/app/api/admin/*).
@@ -42,7 +44,14 @@ export async function generateMetadata(
   return {
     title,
     description,
-    alternates: { canonical },
+    alternates: {
+      canonical,
+      languages: {
+        "id-ID": `/journal/${article.slug}`,
+        en: `/en/journal/${article.slug}`,
+        "x-default": `/journal/${article.slug}`,
+      },
+    },
     openGraph: {
       title,
       description,
@@ -68,6 +77,7 @@ export default async function JournalDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const { locale, t } = await getI18n();
   const article = await getJournalBySlug(slug);
   if (!article) notFound();
 
@@ -103,9 +113,15 @@ export default async function JournalDetailPage({
     },
     inLanguage: "id-ID",
     ...(article.tags.length > 0
-      ? { keywords: article.tags.map((t) => t.tag.name).join(", ") }
+      ? { keywords: article.tags.map((tg) => tg.tag.name).join(", ") }
       : {}),
   };
+
+  const dateFmt = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "id-ID", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
     <>
@@ -117,9 +133,9 @@ export default async function JournalDetailPage({
       <article className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <Breadcrumb
           items={[
-            { name: "Journal", href: "/journal" },
+            { name: "Journal", href: localePrefix(locale, "/journal") },
             ...(article.category
-              ? [{ name: article.category.name, href: `/journal?kategori=${article.category.slug}` }]
+              ? [{ name: article.category.name, href: localePrefix(locale, "/journal") }]
               : []),
             { name: article.title },
           ]}
@@ -132,7 +148,7 @@ export default async function JournalDetailPage({
               <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                 {article.category && (
                   <Link
-                    href={`/journal?kategori=${article.category.slug}`}
+                    href={localePrefix(locale, "/journal")}
                     className="rounded-full bg-accent px-3 py-1 font-medium text-accent-foreground hover:underline"
                   >
                     {article.category.name}
@@ -140,12 +156,12 @@ export default async function JournalDetailPage({
                 )}
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="h-4 w-4" />
-                  {minutes} menit baca
+                  {fmt(t.journalDetail.minutes, { n: minutes })}
                 </span>
                 {article.publishedAt && (
                   <span className="inline-flex items-center gap-1.5">
                     <Calendar className="h-4 w-4" />
-                    {formatDate(article.publishedAt)}
+                    {dateFmt.format(article.publishedAt)}
                   </span>
                 )}
               </div>
@@ -160,12 +176,18 @@ export default async function JournalDetailPage({
                 </p>
               )}
 
+              {locale === "en" && (
+                <p className="mt-4 rounded-xl border border-dashed border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+                  {t.journal.langNotice}
+                </p>
+              )}
+
               <div className="mt-6 flex items-center justify-between gap-4 border-y border-border py-4">
                 <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
                     <User className="h-4 w-4" />
                   </span>
-                  {article.authorName || "Tim ZDL"}
+                  {article.authorName || t.journalDetail.team}
                 </span>
                 <ShareButtons
                   url={`${site.url}/journal/${article.slug}`}
@@ -178,7 +200,7 @@ export default async function JournalDetailPage({
               <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-2xl border border-border bg-muted">
                 <Image
                   src={article.featuredImage}
-                  alt={`Ilustrasi artikel: ${article.title}`}
+                  alt={fmt(t.journalDetail.featuredAlt, { name: article.title })}
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 800px"
@@ -215,7 +237,7 @@ export default async function JournalDetailPage({
               )}
               <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                 <RefreshCcw className="h-3.5 w-3.5" />
-                Terakhir diperbarui {formatDate(article.updatedAt)}
+                {fmt(t.journalDetail.updated, { date: dateFmt.format(article.updatedAt) })}
               </p>
             </footer>
           </div>
@@ -226,16 +248,16 @@ export default async function JournalDetailPage({
               <TableOfContents items={toc} />
               <div className="rounded-2xl border border-primary/30 bg-primary/5 p-5">
                 <p className="font-semibold leading-snug">
-                  Butuh partner untuk membangun sistem digital bisnis Anda?
+                  {t.journalDetail.needPartner}
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Konsultasi gratis via WhatsApp — tanpa kewajiban.
+                  {t.journalDetail.needPartnerDesc}
                 </p>
                 <Link
-                  href="/contact"
+                  href={localePrefix(locale, "/contact")}
                   className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
                 >
-                  Hubungi ZDL
+                  {t.journalDetail.contact}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -246,17 +268,17 @@ export default async function JournalDetailPage({
         {/* Prev / Next */}
         {(neighbors.prev || neighbors.next) && (
           <nav
-            aria-label="Artikel sebelumnya dan berikutnya"
+            aria-label={t.journalDetail.ariaPrevNext}
             className="mt-14 grid gap-4 border-t border-border pt-8 sm:grid-cols-2"
           >
             {neighbors.prev ? (
               <Link
-                href={`/journal/${neighbors.prev.slug}`}
+                href={localePrefix(locale, `/journal/${neighbors.prev.slug}`)}
                 className="group rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40"
               >
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                   <ArrowLeft className="h-3.5 w-3.5" />
-                  Artikel sebelumnya
+                  {t.journalDetail.prev}
                 </span>
                 <p className="mt-2 font-semibold leading-snug group-hover:text-primary">
                   {neighbors.prev.title}
@@ -267,11 +289,11 @@ export default async function JournalDetailPage({
             )}
             {neighbors.next && (
               <Link
-                href={`/journal/${neighbors.next.slug}`}
+                href={localePrefix(locale, `/journal/${neighbors.next.slug}`)}
                 className="group rounded-2xl border border-border bg-card p-5 text-right transition-colors hover:border-primary/40"
               >
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  Artikel berikutnya
+                  {t.journalDetail.next}
                   <ArrowRight className="h-3.5 w-3.5" />
                 </span>
                 <p className="mt-2 font-semibold leading-snug group-hover:text-primary">
@@ -285,10 +307,10 @@ export default async function JournalDetailPage({
         {/* Related */}
         {relatedCards.length > 0 && (
           <section className="mt-14 border-t border-border pt-10">
-            <h2 className="text-2xl font-bold tracking-tight">Artikel terkait</h2>
+            <h2 className="text-2xl font-bold tracking-tight">{t.journalDetail.related}</h2>
             <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {relatedCards.map((r) => (
-                <JournalCard key={r.id} item={r} />
+                <JournalCard key={r.id} item={r} locale={locale} />
               ))}
             </div>
           </section>
@@ -297,8 +319,8 @@ export default async function JournalDetailPage({
 
       <CtaSection
         secondaryLabel={null}
-        title="Punya pertanyaan seputar topik ini?"
-        description="Diskusi singkat via WhatsApp bisa menjawab banyak hal — ceritakan konteks bisnis Anda dan kami bantu arahkan."
+        title={t.journalDetail.ctaTitle}
+        description={t.journalDetail.ctaDesc}
       />
     </>
   );

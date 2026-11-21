@@ -4,32 +4,59 @@ import { db } from "@/lib/db";
 
 export const revalidate = 3600;
 
+type Entry = {
+  url: string;
+  lastModified?: Date;
+  changeFrequency: "weekly" | "monthly" | "daily";
+  priority: number;
+};
+
+/** Attach id/en hreflang alternates to each entry. */
+function withAlternates(entries: Entry[]): MetadataRoute.Sitemap {
+  return entries.map((e) => ({
+    ...e,
+    alternates: {
+      languages: {
+        "id-ID": e.url,
+        en: `${site.url}/en${e.url === site.url ? "" : e.url.replace(site.url, "")}`,
+        "x-default": e.url,
+      },
+    },
+  }));
+}
+
+function pathUrl(path: string): string {
+  return `${site.url}${path === "/" ? "" : path}`;
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = site.url;
 
   // Static pages
-  const staticRoutes: MetadataRoute.Sitemap = [
+  const staticRoutes: Entry[] = [
     { url: base, changeFrequency: "weekly", priority: 1 },
-    { url: `${base}/services`, changeFrequency: "monthly", priority: 0.9 },
-    { url: `${base}/demo`, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${base}/portfolio`, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${base}/journal`, changeFrequency: "daily", priority: 0.8 },
-    { url: `${base}/about`, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${base}/contact`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${base}/demo/coba/kasir`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${base}/demo/coba/booking`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${base}/demo/coba/payment`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${base}/demo/coba/payroll`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${base}/demo/coba/absensi`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${base}/demo/coba/gudang`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${base}/demo/coba/saas`, changeFrequency: "monthly", priority: 0.7 },
+    { url: pathUrl("/services"), changeFrequency: "monthly", priority: 0.9 },
+    { url: pathUrl("/demo"), changeFrequency: "weekly", priority: 0.9 },
+    { url: pathUrl("/portfolio"), changeFrequency: "weekly", priority: 0.9 },
+    { url: pathUrl("/journal"), changeFrequency: "daily", priority: 0.8 },
+    { url: pathUrl("/about"), changeFrequency: "monthly", priority: 0.6 },
+    { url: pathUrl("/contact"), changeFrequency: "monthly", priority: 0.7 },
+    { url: pathUrl("/demo/coba/kasir"), changeFrequency: "monthly", priority: 0.7 },
+    { url: pathUrl("/demo/coba/booking"), changeFrequency: "monthly", priority: 0.7 },
+    { url: pathUrl("/demo/coba/payment"), changeFrequency: "monthly", priority: 0.7 },
+    { url: pathUrl("/demo/coba/payroll"), changeFrequency: "monthly", priority: 0.7 },
+    { url: pathUrl("/demo/coba/absensi"), changeFrequency: "monthly", priority: 0.7 },
+    { url: pathUrl("/demo/coba/gudang"), changeFrequency: "monthly", priority: 0.7 },
+    { url: pathUrl("/demo/coba/saas"), changeFrequency: "monthly", priority: 0.7 },
+    { url: pathUrl("/demo/coba/katalog"), changeFrequency: "monthly", priority: 0.7 },
+    { url: pathUrl("/demo/coba/psikologi"), changeFrequency: "monthly", priority: 0.7 },
   ];
 
   // Dynamic content — wrapped so a DB hiccup never breaks the sitemap
-  let portfolioEntries: MetadataRoute.Sitemap = [];
-  let journalEntries: MetadataRoute.Sitemap = [];
-  let serviceEntries: MetadataRoute.Sitemap = [];
-  let demoEntries: MetadataRoute.Sitemap = [];
+  let portfolioEntries: Entry[] = [];
+  let journalEntries: Entry[] = [];
+  let serviceEntries: Entry[] = [];
+  let demoEntries: Entry[] = [];
 
   try {
     const [portfolios, journals, demos] = await Promise.all([
@@ -48,21 +75,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]);
 
     portfolioEntries = portfolios.map((p) => ({
-      url: `${base}/portfolio/${p.slug}`,
+      url: pathUrl(`/portfolio/${p.slug}`),
       lastModified: p.updatedAt,
       changeFrequency: "monthly" as const,
       priority: 0.7,
     }));
 
     journalEntries = journals.map((j) => ({
-      url: `${base}/journal/${j.slug}`,
+      url: pathUrl(`/journal/${j.slug}`),
       lastModified: j.updatedAt,
       changeFrequency: "monthly" as const,
       priority: 0.6,
     }));
 
     demoEntries = demos.map((d) => ({
-      url: `${base}/demo/${d.slug}`,
+      url: pathUrl(`/demo/${d.slug}`),
       lastModified: d.updatedAt,
       changeFrequency: "monthly" as const,
       priority: 0.7,
@@ -70,7 +97,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const { serviceCategories } = await import("@/lib/services-data");
     serviceEntries = serviceCategories.map((c) => ({
-      url: `${base}/services/${c.slug}`,
+      url: pathUrl(`/services/${c.slug}`),
       changeFrequency: "monthly" as const,
       priority: 0.8,
     }));
@@ -78,5 +105,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("[SITEMAP]", error);
   }
 
-  return [...staticRoutes, ...serviceEntries, ...demoEntries, ...portfolioEntries, ...journalEntries];
+  return withAlternates([
+    ...staticRoutes,
+    ...serviceEntries,
+    ...demoEntries,
+    ...portfolioEntries,
+    ...journalEntries,
+  ]);
 }

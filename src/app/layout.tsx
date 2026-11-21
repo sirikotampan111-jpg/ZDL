@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import { site } from "@/lib/site";
+import { getLocale } from "@/i18n/server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,6 +58,11 @@ export const metadata: Metadata = {
   publisher: site.legalName,
   alternates: {
     canonical: "/",
+    languages: {
+      "id-ID": "/",
+      en: "/en",
+      "x-default": "/",
+    },
   },
   openGraph: {
     type: "website",
@@ -154,13 +160,15 @@ function JsonLd() {
   );
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
-    <html lang="id" suppressHydrationWarning data-scroll-behavior="smooth">
+    <html lang={locale} suppressHydrationWarning data-scroll-behavior="smooth">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${display.variable} ${serifAccent.variable} antialiased bg-background text-foreground min-h-screen flex flex-col`}
       >

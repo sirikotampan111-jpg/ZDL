@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { ListTree } from "lucide-react";
 import type { TocItem } from "@/lib/markdown";
+import { useDict } from "@/i18n/client";
 
 /** Sticky table of contents for long articles. */
 export function TableOfContents({ items }: { items: TocItem[] }) {
   const [activeId, setActiveId] = useState<string>("");
+  const t = useDict();
 
   useEffect(() => {
     const headings = items
@@ -33,10 +35,10 @@ export function TableOfContents({ items }: { items: TocItem[] }) {
   if (items.length < 3) return null;
 
   return (
-    <nav aria-label="Daftar isi" className="rounded-2xl border border-border bg-card p-5">
+    <nav aria-label={t.common.toc} className="rounded-2xl border border-border bg-card p-5">
       <p className="flex items-center gap-2 text-sm font-semibold">
         <ListTree className="h-4 w-4 text-primary" />
-        Daftar isi
+        {t.common.toc}
       </p>
       <ul className="scrollbar-thin mt-3 max-h-[60vh] space-y-1 overflow-y-auto pr-1">
         {items.map((item) => (

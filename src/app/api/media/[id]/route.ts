@@ -35,6 +35,11 @@ export async function GET(_req: NextRequest, { params }: Params) {
         "Content-Length": String(body.length),
         "Cache-Control": "public, max-age=31536000, immutable",
         "Content-Disposition": `inline; filename="${encodeURIComponent(media.filename || "image")}"`,
+        // Sandboxed context: user-uploaded SVG can embed <script>, so it is
+        // served in an opaque origin with scripts disabled. Harmless for
+        // raster images (JPEG/PNG/WebP/GIF/AVIF).
+        "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+        "X-Content-Type-Options": "nosniff",
       },
     });
   } catch (error) {

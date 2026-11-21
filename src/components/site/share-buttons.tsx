@@ -3,26 +3,28 @@
 import { useState } from "react";
 import { Share2, Link2, Check, Facebook, Twitter } from "lucide-react";
 import { WhatsAppIcon } from "@/components/site/whatsapp-icon";
+import { useDict } from "@/i18n/client";
 
 export function ShareButtons({ url, title }: { url: string; title: string }) {
   const [copied, setCopied] = useState(false);
+  const t = useDict();
 
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
 
   const shareTargets = [
     {
-      label: "Bagikan via WhatsApp",
+      label: t.common.shareWA,
       href: `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`,
       Icon: WhatsAppIcon,
     },
     {
-      label: "Bagikan via Facebook",
+      label: t.common.shareFB,
       href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
       Icon: Facebook,
     },
     {
-      label: "Bagikan via X/Twitter",
+      label: t.common.shareX,
       href: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`,
       Icon: Twitter,
     },
@@ -42,7 +44,7 @@ export function ShareButtons({ url, title }: { url: string; title: string }) {
     <div className="flex items-center gap-2">
       <span className="mr-1 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
         <Share2 className="h-4 w-4" />
-        Bagikan:
+        {t.common.share}
       </span>
       {shareTargets.map(({ label, href, Icon }) => (
         <a
@@ -58,7 +60,7 @@ export function ShareButtons({ url, title }: { url: string; title: string }) {
       ))}
       <button
         onClick={copyLink}
-        aria-label="Salin tautan artikel"
+        aria-label={t.common.copyLink}
         className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
       >
         {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Link2 className="h-4 w-4" />}

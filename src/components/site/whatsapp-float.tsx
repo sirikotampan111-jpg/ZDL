@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { MessageCircle, X } from "lucide-react";
-import { site, waLink } from "@/lib/site";
+import { site } from "@/lib/site";
+import { useDict } from "@/i18n/client";
 
 /** Floating WhatsApp CTA — appears after scrolling a bit. */
 export function WhatsappFloat() {
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const t = useDict();
 
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 420);
@@ -29,18 +31,18 @@ export function WhatsappFloat() {
           className="fixed bottom-5 right-5 z-50 flex items-center gap-2"
         >
           <a
-            href={waLink()}
+            href={`https://wa.me/${site.whatsapp.intl}?text=${encodeURIComponent(t.wa.defaultMsg)}`}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={`Konsultasi via WhatsApp ${site.whatsapp.display}`}
+            aria-label={`${t.wa.float} ${site.whatsapp.display}`}
             className="group flex items-center gap-2.5 rounded-full bg-[#25D366] py-3 pl-4 pr-5 font-semibold text-white shadow-lg shadow-black/20 transition-transform hover:scale-[1.03] active:scale-95"
           >
             <MessageCircle className="h-5 w-5" />
-            <span className="hidden text-sm sm:inline">Konsultasi via WhatsApp</span>
+            <span className="hidden text-sm sm:inline">{t.wa.float}</span>
           </a>
           <button
             onClick={() => setDismissed(true)}
-            aria-label="Tutup tombol WhatsApp"
+            aria-label={t.wa.close}
             className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground backdrop-blur transition-colors hover:text-foreground"
           >
             <X className="h-3.5 w-3.5" />

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FlaskConical } from "lucide-react";
 import { DemoCard, type DemoCardData } from "@/components/site/demo-card";
 import { Reveal } from "@/components/site/reveal";
+import { useDict } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 
 /**
@@ -15,11 +16,14 @@ import { cn } from "@/lib/utils";
 export function DemoFilterGrid({
   categories,
   demos,
+  locale,
 }: {
   categories: { name: string; count: number }[];
   demos: DemoCardData[];
+  locale: "id" | "en";
 }) {
   const [active, setActive] = useState<string | null>(null);
+  const t = useDict();
 
   const filtered = active
     ? demos.filter((d) => d.category === active)
@@ -27,7 +31,7 @@ export function DemoFilterGrid({
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2" role="navigation" aria-label="Filter kategori demo">
+      <div className="flex flex-wrap items-center gap-2" role="navigation" aria-label={t.demo.ariaFilter}>
         <button
           type="button"
           onClick={() => setActive(null)}
@@ -38,7 +42,7 @@ export function DemoFilterGrid({
               : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
           )}
         >
-          Semua
+          {t.common.all}
         </button>
         {categories.map((cat) => (
           <button
@@ -61,17 +65,16 @@ export function DemoFilterGrid({
       {filtered.length === 0 ? (
         <div className="mt-12 flex flex-col items-center rounded-2xl border border-dashed border-border p-14 text-center">
           <FlaskConical className="h-10 w-10 text-muted-foreground/50" />
-          <p className="mt-4 font-medium">Belum ada demo pada kategori ini.</p>
+          <p className="mt-4 font-medium">{t.demo.empty}</p>
           <p className="mt-1 max-w-md text-sm text-muted-foreground">
-            Demo baru terus ditambahkan. Mau melihat cara kerja sistem tertentu?
-            Hubungi kami — kami siap menyiapkan sesi demo langsung untuk Anda.
+            {t.demo.emptyDesc}
           </p>
         </div>
       ) : (
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((d, i) => (
             <Reveal key={d.id} delay={Math.min(i, 8) * 0.05}>
-              <DemoCard item={d} />
+              <DemoCard item={d} locale={locale} />
             </Reveal>
           ))}
         </div>

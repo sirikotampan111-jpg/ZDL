@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Clock, Newspaper } from "lucide-react";
 import { JournalCard, type JournalCardData } from "@/components/site/journal-card";
+import { useDict, useLocale } from "@/i18n/client";
+import { localePrefix } from "@/i18n/config";
 import { cn } from "@/lib/utils";
 
 export interface JournalCategoryChip {
@@ -21,11 +23,14 @@ export interface JournalCategoryChip {
 export function JournalFilterGrid({
   categories,
   journals,
+  locale,
 }: {
   categories: JournalCategoryChip[];
   journals: JournalCardData[];
+  locale: "id" | "en";
 }) {
   const [active, setActive] = useState<string | null>(null);
+  const t = useDict();
 
   const filtered = active
     ? journals.filter((j) => j.category?.slug === active)
@@ -33,7 +38,7 @@ export function JournalFilterGrid({
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2" role="navigation" aria-label="Filter kategori artikel">
+      <div className="flex flex-wrap items-center gap-2" role="navigation" aria-label={t.journal.ariaFilter}>
         <button
           type="button"
           onClick={() => setActive(null)}
@@ -44,7 +49,7 @@ export function JournalFilterGrid({
               : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
           )}
         >
-          Semua
+          {t.common.all}
         </button>
         {categories.map((cat) => (
           <button
@@ -67,11 +72,11 @@ export function JournalFilterGrid({
       {filtered.length === 0 ? (
         <div className="mt-12 flex flex-col items-center rounded-2xl border border-dashed border-border p-14 text-center">
           <Newspaper className="h-10 w-10 text-muted-foreground/50" />
-          <p className="mt-4 font-medium">Belum ada artikel pada kategori ini.</p>
+          <p className="mt-4 font-medium">{t.journal.empty}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Coba pilih kategori lain, atau kunjungi{" "}
-            <Link href="/" className="text-primary hover:underline">
-              halaman utama
+            {t.journal.emptyPre}{" "}
+            <Link href={localePrefix(locale, "/")} className="text-primary hover:underline">
+              {t.journal.emptyLink}
             </Link>
             .
           </p>
@@ -80,7 +85,7 @@ export function JournalFilterGrid({
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((j, i) => (
             <article key={j.id} className={i === 0 && !active ? "sm:col-span-2 lg:col-span-1" : ""}>
-              <JournalCard item={j} />
+              <JournalCard item={j} locale={locale} />
             </article>
           ))}
         </div>
@@ -88,7 +93,7 @@ export function JournalFilterGrid({
 
       <p className="mt-10 flex items-center justify-center gap-2 text-center text-sm text-muted-foreground">
         <Clock className="h-4 w-4" />
-        Artikel baru dipublikasikan secara berkala melalui ZDL CMS.
+        {t.journal.subscribeNote}
       </p>
     </>
   );

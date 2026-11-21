@@ -166,6 +166,89 @@ export const REAL_PORTFOLIOS = [
   },
 ];
 
+/**
+ * English translations for the real portfolio entries (used on /en pages).
+ * Applied on create AND enriched onto existing rows whose translations
+ * are still empty — CMS-managed ID content is never overwritten.
+ */
+const EN = {
+  "pawonbhoga-id": {
+    description: `Catering service for Surabaya, Sidoarjo & Gresik: premium lunch boxes, ornamental tumpeng rice cones, daily home/office catering, and event orders with fast delivery. ${ZDL}`,
+  },
+  "kinsuroi-com": {
+    description: `Official site of KINSUROI — a simple & elegant skincare ritual brand: cleansers, serums, lip care, and body care. ${ZDL}`,
+  },
+  "sewamotorjakarta-co-id": {
+    description: `Daily, weekly & monthly motorcycle rental for DKI Jakarta and Tangerang. Honda Beat, Vario, NMAX, PCX up to Aerox — well-maintained and comfortable. ${ZDL}`,
+  },
+  "kirimikanhias-com": {
+    description: `Website of Bettalover Express, an ornamental fish shipping service. ${ZDL}`,
+  },
+  "bimbelstarlish-com": {
+    title: "Starlish Tutoring Centre — bimbelstarlish.com",
+    description: `A tutoring institute in Gading Serpong: kindergarten Calistung prep, elementary, junior high & high school programs with small classes, experienced teachers, and a structured learning system. ${ZDL}`,
+  },
+  "liviarealestate-asia": {
+    description: `Marketing site for Springhill Yume Lagoon residences in Cisauk, Tangerang — a modern 15-hectare, ready-to-live, flood-free housing estate, direct from the developer's official sales team. ${ZDL}`,
+  },
+  "kementriansegosbebek-id": {
+    title: "Kementrian Sego's Bebek Restaurant — kementriansegosbebek.id",
+    description: `Premium black-spice duck restaurant in Sidoarjo — dine in, delivery, catering, and franchise partnerships. ${ZDL}`,
+  },
+  "kopikir-store": {
+    description: `Official site of KOPIKIR — a coffee & culture brand with a clean, modern digital experience. ${ZDL}`,
+  },
+  "genesisxproperty-com": {
+    description: `Official site of Park Serpong Legok by Lippo — modern, strategic housing in Legok, Tangerang, with complete facilities and easy access. ${ZDL}`,
+  },
+  "terradekor-com": {
+    description: `Terradekor (PT Opulent Interior Indonesia) — premium interior & construction solutions for homes and businesses. ${ZDL}`,
+  },
+  "designhomeliving-org": {
+    description: `Material supply & interior–exterior installation services in Tangerang: professional WPC, vinyl, SPC, decking, and PVC ceiling installation. ${ZDL}`,
+  },
+  "lianahomeinterior-com": {
+    description: `Professional interior services in Bekasi — kitchen sets, custom furniture, wall panels, vinyl flooring, renovation, and interior design. ${ZDL}`,
+  },
+  "allin-web-id": {
+    title: "ALLIN — National Power Industry Association — allin.web.id",
+    description: `Official site of ALLIN — the National Electricity Industry Environment Association, an organization of Indonesia's power industry players. ${ZDL}`,
+  },
+  "pawonbhoga-com": {
+    description: `The official .com domain of Pawon Bhoga — catering service for Surabaya, Sidoarjo & Gresik: lunch boxes, snack boxes, tumpeng, and buffets. ${ZDL}`,
+  },
+  "lantaifutsalsurabaya-asia": {
+    description: `H2 Sport Surabaya — sports flooring supplier & installer: futsal, mini soccer, padel, and basketball. Free consultation via WhatsApp. ${ZDL}`,
+  },
+  "migasstell-com": {
+    description: `Oil & gas and industrial tank fabrication: fuel, avtur, diesel, and LPG tanks, skid tanks, pressure vessels, and piping for oil & gas, LNG, petrochemical, and manufacturing sectors. ${ZDL}`,
+  },
+};
+
+export function enFields(p) {
+  const en = EN[p.slug];
+  if (!en) return {};
+  return {
+    titleEn: en.title ?? p.title,
+    descriptionEn: en.description ?? null,
+  };
+}
+
+/**
+ * Fill empty English translations on rows that already exist in production
+ * (created before i18n). Idempotent: only touches rows with titleEn = null.
+ */
+export async function enrichPortfolioTranslations(db) {
+  let updated = 0;
+  for (const p of REAL_PORTFOLIOS) {
+    const existing = await db.portfolio.findUnique({ where: { slug: p.slug } });
+    if (!existing || existing.titleEn) continue;
+    await db.portfolio.update({ where: { slug: p.slug }, data: enFields(p) });
+    updated++;
+  }
+  console.log(`[seed-content] Portfolio EN translations enriched: ${updated}`);
+}
+
 async function uploadCoverIfMissing(db, slug, alt) {
   const filename = `cover-${slug}.png`;
   const existing = await db.media.findFirst({ where: { filename } });
@@ -224,6 +307,7 @@ export async function seedPortfolios(db) {
         technologies: JSON.stringify([]),
         seoTitle: `${p.title} — Portofolio ZDL`,
         seoDescription: p.description.slice(0, 155),
+        ...enFields(p),
       },
     });
     created++;

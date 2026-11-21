@@ -2,12 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { parseJsonArray } from "@/lib/markdown";
+import { pickDescription, pickTitle } from "@/i18n/content";
+import { localePrefix, defaultLocale, type Locale } from "@/i18n/config";
 
 export interface PortfolioCardData {
   id: string;
   title: string;
+  titleEn?: string | null;
   slug: string;
   description: string;
+  descriptionEn?: string | null;
   thumbnail: string | null;
   technologies: string;
   year: number | null;
@@ -15,12 +19,14 @@ export interface PortfolioCardData {
   category: { name: string; slug: string } | null;
 }
 
-export function PortfolioCard({ item }: { item: PortfolioCardData }) {
+export function PortfolioCard({ item, locale = defaultLocale }: { item: PortfolioCardData; locale?: Locale }) {
   const techs = parseJsonArray(item.technologies).slice(0, 4);
+  const title = pickTitle(item, locale);
+  const fullDescription = pickDescription(item, locale);
   const excerpt =
-    item.description.length > 140
-      ? `${item.description.slice(0, 140).trimEnd()}…`
-      : item.description;
+    fullDescription.length > 140
+      ? `${fullDescription.slice(0, 140).trimEnd()}…`
+      : fullDescription;
   const host = (() => {
     if (!item.projectUrl) return null;
     try {
@@ -32,14 +38,14 @@ export function PortfolioCard({ item }: { item: PortfolioCardData }) {
 
   return (
     <Link
-      href={`/portfolio/${item.slug}`}
+      href={localePrefix(locale, `/portfolio/${item.slug}`)}
       className="group flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-300 hover:border-primary/50 hover:shadow-[0_4px_20px_-6px_rgba(16,16,24,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="relative aspect-[3/2] overflow-hidden bg-muted">
         {item.thumbnail ? (
           <Image
             src={item.thumbnail}
-            alt={`Thumbnail project ${item.title}`}
+            alt={`Thumbnail project ${title}`}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
@@ -62,7 +68,7 @@ export function PortfolioCard({ item }: { item: PortfolioCardData }) {
       <div className="flex flex-1 flex-col p-5">
         <div className="flex items-baseline justify-between gap-2">
           <h3 className="font-semibold leading-snug tracking-tight group-hover:text-primary">
-            {item.title}
+            {title}
           </h3>
           {item.year && (
             <span className="shrink-0 font-mono text-xs text-muted-foreground">{item.year}</span>

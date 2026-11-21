@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { ArrowLeft, FlaskConical, MessageCircle, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { waLink } from "@/lib/site";
+import { site } from "@/lib/site";
+import { useLocale } from "@/i18n/client";
 
 /**
  * Shared chrome for interactive demo pages (/demo/coba/*).
@@ -24,6 +25,11 @@ export function DemoShell({
   backLabel: string;
   children: React.ReactNode;
 }) {
+  const locale = useLocale();
+  const en = locale === "en";
+  const waMsg = en
+    ? `Hello ZDL, I just tried the "${title}" demo on zdl.my.id/demo. I'm interested in building a similar app for my business.`
+    : `Halo ZDL, saya baru mencoba demo "${title}" di zdl.my.id/demo. Saya tertarik membangun aplikasi seperti itu untuk bisnis saya.`;
   return (
     <div className="min-h-[calc(100vh-4rem)]">
       {/* Simulation banner */}
@@ -31,11 +37,12 @@ export function DemoShell({
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-1.5 px-4 py-2.5 text-center text-xs font-medium text-foreground sm:px-6 sm:text-sm">
           <span className="inline-flex items-center gap-1.5">
             <FlaskConical className="h-4 w-4 text-primary" />
-            <strong>Mode Demo</strong> — data simulasi, tidak ada yang tersimpan
+            <strong>{en ? "Demo Mode" : "Mode Demo"}</strong> —{" "}
+            {en ? "simulated data, nothing is stored" : "data simulasi, tidak ada yang tersimpan"}
           </span>
           <span className="inline-flex items-center gap-1.5 text-muted-foreground">
             <ShieldCheck className="h-4 w-4 text-primary/70" />
-            Aman dicoba — bukan sistem produksi
+            {en ? "Safe to try — not a production system" : "Aman dicoba — bukan sistem produksi"}
           </span>
         </div>
       </div>
@@ -63,12 +70,12 @@ export function DemoShell({
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div>
               <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
-                Mau aplikasi seperti ini untuk bisnis Anda?
+                {en ? "Want an app like this for your business?" : "Mau aplikasi seperti ini untuk bisnis Anda?"}
               </h2>
               <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                Yang tadi hanya simulasi ringan di browser. Versi aslinya dibuat
-                sesuai alur kerja bisnis Anda — dengan data nyata, laporan, dan
-                integrasi WhatsApp.
+                {en
+                  ? "That was just a lightweight browser simulation. The real version is built around your business workflow — with real data, reports, and WhatsApp integration."
+                  : "Yang tadi hanya simulasi ringan di browser. Versi aslinya dibuat sesuai alur kerja bisnis Anda — dengan data nyata, laporan, dan integrasi WhatsApp."}
               </p>
             </div>
             <Button
@@ -76,12 +83,12 @@ export function DemoShell({
               className="shrink-0 rounded-full bg-primary font-medium text-primary-foreground"
             >
               <a
-                href={waLink(`Halo ZDL, saya baru mencoba demo "${title}" di zdl.my.id/demo. Saya tertarik membangun aplikasi seperti itu untuk bisnis saya.`)}
+                href={`https://wa.me/${site.whatsapp.intl}?text=${encodeURIComponent(waMsg)}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <MessageCircle className="mr-2 h-4 w-4" />
-                Konsultasi Gratis
+                {en ? "Free Consultation" : "Konsultasi Gratis"}
               </a>
             </Button>
           </div>

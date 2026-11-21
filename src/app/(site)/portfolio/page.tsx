@@ -4,27 +4,32 @@ import { CtaSection } from "@/components/site/cta-section";
 import { PortfolioFilterGrid } from "@/components/site/portfolio-filter-grid";
 import { getPublishedPortfolios, getPortfolioCategories } from "@/lib/queries";
 import { site } from "@/lib/site";
+import { getI18n } from "@/i18n/server";
+import { fmt, localePrefix } from "@/i18n/config";
 
-// Content is CMS-managed — cached via ISR and revalidated on-demand
-// when content changes through the admin API (see src/app/api/admin/*).
-// Category filtering is client-side (instant) so this page stays cached.
+// Content is CMS-managed. Category filtering is client-side (instant).
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: "Portfolio — Website Klien ZDL Lintas Industri",
-  description:
-    "Portofolio website klien ZDL lintas industri: kuliner & F&B, properti, interior & konstruksi, edukasi, transportasi & logistik, industri & energi, hingga organisasi.",
-  alternates: { canonical: "/portfolio" },
-  openGraph: {
-    title: "Portfolio ZDL — Zheng Digital Lab",
-    description:
-      "Koleksi website klien yang pernah ZDL kerjakan & kelola — dari catering, restoran, dan brand skincare hingga developer properti, supplier lantai olahraga, dan fabrikasi tangki migas.",
-    url: `${site.url}/portfolio`,
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return {
+    title: t.portfolio.metaTitle,
+    description: t.portfolio.metaDesc,
+    alternates: {
+      canonical: "/portfolio",
+      languages: { "id-ID": "/portfolio", en: "/en/portfolio", "x-default": "/portfolio" },
+    },
+    openGraph: {
+      title: t.portfolio.ogTitle,
+      description: t.portfolio.ogDesc,
+      url: `${site.url}/portfolio`,
+      type: "website",
+    },
+  };
+}
 
 export default async function PortfolioPage() {
+  const { locale, t } = await getI18n();
   const [categories, portfolios] = await Promise.all([
     getPortfolioCategories(),
     getPublishedPortfolios(),
@@ -34,8 +39,10 @@ export default async function PortfolioPage() {
   const portfolioCards = portfolios.map((p) => ({
     id: p.id,
     title: p.title,
+    titleEn: p.titleEn,
     slug: p.slug,
     description: p.description,
+    descriptionEn: p.descriptionEn,
     thumbnail: p.thumbnail,
     technologies: p.technologies,
     year: p.year,
@@ -56,33 +63,37 @@ export default async function PortfolioPage() {
     <>
       <PageHero
         breadcrumb={[{ name: "Portfolio" }]}
-        eyebrow="Portofolio klien"
+        eyebrow={t.portfolio.heroEyebrow}
         title={
           <>
-            Website yang{" "}
+            {t.portfolio.heroTitlePre}{" "}
             <span className="font-serif-accent font-normal text-primary">
-              berjalan hari ini
+              {t.portfolio.heroTitleAccent}
             </span>
-            — bukan mockup
+            {t.portfolio.heroTitlePost}
           </>
         }
-        description={`${portfolioCards.length} website klien yang live dan kami kelola sekarang — dari catering di Surabaya sampai fabrikasi tangki migas. Filter berdasarkan industri, atau buka langsung situsnya dari halaman detail project.`}
+        description={fmt(t.portfolio.heroDesc, { n: portfolioCards.length })}
         meta={[
-          `${portfolioCards.length} project live`,
-          `${categoryChips.length} industri`,
-          "Dikerjakan internal",
+          fmt(t.portfolio.metaLive, { n: portfolioCards.length }),
+          fmt(t.portfolio.metaIndustries, { n: categoryChips.length }),
+          t.portfolio.metaInhouse,
         ]}
       />
 
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-        <PortfolioFilterGrid categories={categoryChips} portfolios={portfolioCards} />
+        <PortfolioFilterGrid
+          categories={categoryChips}
+          portfolios={portfolioCards}
+          locale={locale}
+        />
       </section>
 
       <CtaSection
-        title="Project Anda bisa jadi yang berikutnya"
-        description="Setiap project dimulai dari percakapan singkat. Ceritakan kebutuhan Anda dan lihat bagaimana kami akan mengeksekusinya."
-        secondaryLabel="Lihat layanan kami"
-        secondaryHref="/services"
+        title={t.portfolio.ctaTitle}
+        description={t.portfolio.ctaDesc}
+        secondaryLabel={t.portfolio.ctaSecondary}
+        secondaryHref={localePrefix(locale, "/services")}
       />
     </>
   );

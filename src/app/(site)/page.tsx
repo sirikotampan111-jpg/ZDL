@@ -7,7 +7,7 @@ import { SectionHeading } from "@/components/site/section-heading";
 import { PortfolioCard } from "@/components/site/portfolio-card";
 import { DemoCard } from "@/components/site/demo-card";
 import { CtaSection } from "@/components/site/cta-section";
-import { serviceCategories } from "@/lib/services-data";
+import { getLocalizedServiceCategories } from "@/lib/services-data-en";
 import { ZDL_CLIENTS } from "@/lib/clients";
 import {
   getPublishedDemos,
@@ -15,51 +15,17 @@ import {
   getPublishedPortfolios,
 } from "@/lib/queries";
 import { readingTime } from "@/lib/markdown";
-import { waLink } from "@/lib/site";
+import { site } from "@/lib/site";
+import { getI18n } from "@/i18n/server";
+import { fmt, localePrefix } from "@/i18n/config";
+import { pickDescription, pickTitle } from "@/i18n/content";
 
-// Content is CMS-managed — cached via ISR and revalidated on-demand
-// when content changes through the admin API (see src/app/api/admin/*).
+// Content is CMS-managed. The page reads the locale header, so it renders
+// per request (still fast — DB queries are pooled and the page is light).
 export const revalidate = 300;
 
-const valueProps = [
-  {
-    title: "Bicara dengan yang mengerjakan",
-    description:
-      "Tidak ada lapisan account manager. Yang Anda ajak meeting adalah orang yang menulis kodenya — jadi keputusan teknis cepat dan tidak ada yang hilang di terjemahan.",
-  },
-  {
-    title: "Dibangun untuk dikembangkan, bukan dilepas",
-    description:
-      "Stack modern (Next.js, TypeScript, PostgreSQL) dengan dokumentasi rapi. Website Anda bukan file yang dititipkan — ini aset yang bisa Anda pindahkan, kembangkan, atau audit kapan saja.",
-  },
-  {
-    title: "Cepat di jaringan HP Indonesia",
-    description:
-      "Mayoritas pengunjung Anda buka dari ponsel dengan sinyal 4G. Setiap halaman kami optimasi untuk itu: gambar terkompresi, JavaScript hemat, server rendering.",
-  },
-  {
-    title: "Satu penanggung jawab sampai beres",
-    description:
-      "Website, domain, hosting, email bisnis, otomasi spreadsheet — satu tempat. Tidak perlu mengoordinasikan lima vendor yang saling menunjuk kalau ada masalah.",
-  },
-];
-
-const processSteps = [
-  { step: "01", name: "Dengar", description: "Ceritakan masalahnya — kami pelajari bisnis dan tujuan Anda dulu, belum bicara teknis." },
-  { step: "02", name: "Rancang", description: "Ruang lingkup, struktur, dan prioritas disepakati tertulis sebelum kode pertama." },
-  { step: "03", name: "Bangun", description: "Pengerjaan dengan progres yang bisa Anda lihat — bukan kotak hitam selama berbulan-bulan." },
-  { step: "04", name: "Uji", description: "Diperiksa di HP nyata dan jaringan nyata: kecepatan, alur, dan sudut-sudut yang jarang dicek." },
-  { step: "05", name: "Tayang", description: "Dipasang dengan konfigurasi aman, domain dan SSL beres, siap dikunjungi." },
-  { step: "06", name: "Rawat", description: "Setelah live kami tidak menghilang — pemeliharaan, perbaikan, dan pengembangan lanjutan." },
-];
-
-const journalDateFmt = new Intl.DateTimeFormat("id-ID", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
-
 export default async function HomePage() {
+  const { locale, t } = await getI18n();
   const [allPortfolios, latestJournals, allDemos] = await Promise.all([
     getPublishedPortfolios(),
     getPublishedJournals({ take: 4 }),
@@ -98,6 +64,12 @@ export default async function HomePage() {
     readingMinutes: readingTime(j.content),
   }));
 
+  const journalDateFmt = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
   return (
     <>
       {/* ================================================== HERO */}
@@ -114,18 +86,18 @@ export default async function HomePage() {
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
                       <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                     </span>
-                    Terima project baru
+                    {t.home.statusNew}
                   </span>
                   <span aria-hidden="true" className="text-border">/</span>
-                  <span>Tangerang, Indonesia</span>
+                  <span>{t.home.location}</span>
                 </p>
               </Reveal>
 
               <Reveal delay={0.08}>
                 <h1 className="mt-7 text-[2.6rem] font-bold leading-[1.06] tracking-tight sm:text-6xl lg:text-[4rem]">
-                  Website &amp; sistem bisnis yang{" "}
+                  {t.home.h1Pre}{" "}
                   <span className="font-serif-accent font-normal text-primary">
-                    dikerjakan sampai beres
+                    {t.home.h1Accent}
                   </span>
                   .
                 </h1>
@@ -133,9 +105,7 @@ export default async function HomePage() {
 
               <Reveal delay={0.16}>
                 <p className="mt-7 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-                  ZDL membangun dan merawat website, aplikasi, dan sistem internal
-                  untuk {ZDL_CLIENTS.length} brand — dari catering Surabaya sampai fabrikasi tangki
-                  migas. Dikerjakan langsung oleh orang yang bisa Anda ajak bicara.
+                  {fmt(t.home.heroBody, { n: ZDL_CLIENTS.length })}
                 </p>
               </Reveal>
               <Reveal delay={0.24}>
@@ -145,9 +115,13 @@ export default async function HomePage() {
                     size="lg"
                     className="rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground hover:bg-primary/90"
                   >
-                    <a href={waLink()} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={`https://wa.me/${site.whatsapp.intl}?text=${encodeURIComponent(t.wa.defaultMsg)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       <MessageCircle className="mr-2 h-5 w-5" />
-                      Diskusikan project
+                      {t.home.ctaPrimary}
                     </a>
                   </Button>
                   <Button
@@ -156,8 +130,8 @@ export default async function HomePage() {
                     variant="outline"
                     className="rounded-full px-8 text-base font-medium"
                   >
-                    <Link href="/demo">
-                      Coba demo interaktif
+                    <Link href={localePrefix(locale, "/demo")}>
+                      {t.home.ctaDemo}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
@@ -166,7 +140,7 @@ export default async function HomePage() {
 
               <Reveal delay={0.32}>
                 <p className="mono-label mt-8 text-muted-foreground">
-                  Tangerang · Jakarta · Jabodetabek — seluruh Indonesia
+                  {t.home.regions}
                 </p>
               </Reveal>
             </div>
@@ -181,7 +155,7 @@ export default async function HomePage() {
         <div className="relative border-y border-border bg-card/40">
           <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
             <p className="mono-label text-center text-muted-foreground">
-              Dipercaya {ZDL_CLIENTS.length} brand di {industryCount} industri
+              {fmt(t.home.trusted, { n: ZDL_CLIENTS.length, m: industryCount })}
             </p>
           </div>
           <div className="relative mt-4 overflow-hidden pb-6 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
@@ -210,15 +184,15 @@ export default async function HomePage() {
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24" id="services">
         <SectionHeading
           index="01"
-          eyebrow="Layanan"
-          title="Enam lini layanan, satu penanggung jawab"
-          description="Semua dikerjakan internal — tidak dilepas ke pihak ketiga. Kalau ada yang perlu diubah, Anda tahu harus bicara dengan siapa."
+          eyebrow={t.home.svcEyebrow}
+          title={t.home.svcTitle}
+          description={t.home.svcDesc}
         />
         <div className="mt-12 border-y border-border">
-          {serviceCategories.map((cat, i) => (
+          {getLocalizedServiceCategories(locale).map((cat, i) => (
             <Reveal key={cat.slug} delay={i * 0.03}>
               <Link
-                href={`/services/${cat.slug}`}
+                href={localePrefix(locale, `/services/${cat.slug}`)}
                 className="group -mx-4 grid gap-2.5 border-b border-border px-4 py-7 transition-colors last:border-b-0 hover:bg-muted/40 sm:mx-0 sm:grid-cols-[3.5rem_1fr_auto] sm:items-center sm:gap-6 sm:px-4"
               >
                 <span className="mono-label text-muted-foreground/70">
@@ -250,12 +224,12 @@ export default async function HomePage() {
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
           <SectionHeading
             index="02"
-            eyebrow="Kenapa ZDL"
-            title="Prinsip kerja yang kami pegang"
-            description="Bukan slogan — ini cara kami bekerja setiap hari pada project klien."
+            eyebrow={t.home.whyEyebrow}
+            title={t.home.whyTitle}
+            description={t.home.whyDesc}
           />
           <div className="mt-12 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2">
-            {valueProps.map((vp, i) => (
+            {t.home.valueProps.map((vp, i) => (
               <Reveal key={vp.title} delay={i * 0.05}>
                 <div className="h-full bg-background p-7 sm:p-9">
                   <span className="mono-label text-primary">
@@ -278,15 +252,17 @@ export default async function HomePage() {
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
         <SectionHeading
           index="03"
-          eyebrow="Cara kerja"
-          title="Enam tahap, tanpa kejutan"
-          description="Dari cerita awal sampai website terawat — setiap tahap Anda tahu sedang di mana. Skala project berbeda, disiplinnya sama."
+          eyebrow={t.home.howEyebrow}
+          title={t.home.howTitle}
+          description={t.home.howDesc}
         />
         <div className="mt-12 grid gap-x-12 md:grid-cols-2">
-          {processSteps.map((ps, i) => (
-            <Reveal key={ps.step} delay={i * 0.04}>
+          {t.home.processSteps.map((ps, i) => (
+            <Reveal key={ps.name} delay={i * 0.04}>
               <div className="flex gap-6 border-t border-border py-6">
-                <span className="font-mono text-sm font-semibold text-primary">{ps.step}</span>
+                <span className="font-mono text-sm font-semibold text-primary">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
                 <div>
                   <h3 className="font-semibold tracking-tight">{ps.name}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
@@ -304,13 +280,13 @@ export default async function HomePage() {
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
           <SectionHeading
             index="04"
-            eyebrow="Portofolio"
-            title="Project yang berjalan, bukan mockup"
-            description="Semua website di bawah live dan kami kelola. Buka situsnya langsung dari halaman detail project."
+            eyebrow={t.home.portEyebrow}
+            title={t.home.portTitle}
+            description={t.home.portDesc}
           />
           {portfolioFallback ? (
             <p className="mt-12 rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
-              Portfolio akan segera ditampilkan — tambahkan project pertama Anda melalui CMS Admin.
+              {t.home.portfolioEmpty}
             </p>
           ) : (
             <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -320,18 +296,20 @@ export default async function HomePage() {
                   delay={i * 0.05}
                   className={i === 0 ? "sm:col-span-2 lg:col-span-2" : undefined}
                 >
-                  <PortfolioCard item={p} />
+                  <PortfolioCard item={p} locale={locale} />
                 </Reveal>
               ))}
             </div>
           )}
           <div className="mt-10 flex items-center justify-between gap-4">
             <p className="mono-label text-muted-foreground">
-              + {Math.max(portfolioCount - featuredPortfolios.length, 0)} project lainnya
+              {fmt(t.home.moreProjects, {
+                n: Math.max(portfolioCount - featuredPortfolios.length, 0),
+              })}
             </p>
             <Button asChild variant="outline" className="rounded-full px-7">
-              <Link href="/portfolio">
-                Lihat semua portfolio
+              <Link href={localePrefix(locale, "/portfolio")}>
+                {t.home.viewAllPortfolio}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -344,22 +322,24 @@ export default async function HomePage() {
         <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
           <SectionHeading
             index="05"
-            eyebrow="Demo interaktif"
-            title="Coba dulu, baru percaya"
-            description="Simulasi aplikasi yang benar-benar bisa diklik — kasir, payroll, stok gudang, dan lainnya. Langsung di browser, tanpa daftar dan tanpa instal."
+            eyebrow={t.home.demoEyebrow}
+            title={t.home.demoTitle}
+            description={t.home.demoDesc}
           />
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {latestDemos.map((d, i) => (
               <Reveal key={d.id} delay={i * 0.05}>
-                <DemoCard item={d} />
+                <DemoCard item={d} locale={locale} />
               </Reveal>
             ))}
           </div>
           <div className="mt-10 flex items-center justify-between gap-4">
-            <p className="mono-label text-muted-foreground">{demoCount} simulasi tersedia</p>
+            <p className="mono-label text-muted-foreground">
+              {fmt(t.home.demoCount, { n: demoCount })}
+            </p>
             <Button asChild variant="outline" className="rounded-full px-7">
-              <Link href="/demo">
-                Jelajahi semua demo
+              <Link href={localePrefix(locale, "/demo")}>
+                {t.home.exploreDemos}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -372,24 +352,24 @@ export default async function HomePage() {
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
           <SectionHeading
             index="06"
-            eyebrow="ZDL Journal"
-            title="Catatan dari lapangan"
-            description="Yang kami pelajari dari mengerjakan website bisnis nyata — ditulis ringkas dan bisa langsung dipraktikkan."
+            eyebrow={t.home.jrnEyebrow}
+            title={t.home.jrnTitle}
+            description={t.home.jrnDesc}
           />
           {journalCards.length === 0 ? (
             <p className="mt-12 rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
-              Artikel pertama akan segera dipublikasikan — kelola melalui CMS Admin.
+              {t.home.journalEmpty}
             </p>
           ) : (
             <div className="mt-10 border-t border-border">
               {journalCards.map((j) => (
                 <Link
                   key={j.id}
-                  href={`/journal/${j.slug}`}
+                  href={localePrefix(locale, `/journal/${j.slug}`)}
                   className="group -mx-4 grid gap-2 border-b border-border px-4 py-6 transition-colors hover:bg-muted/40 sm:mx-0 sm:grid-cols-[8rem_1fr_auto] sm:items-center sm:gap-8 sm:px-4"
                 >
                   <span className="font-mono text-xs text-muted-foreground">
-                    {j.publishedAt ? journalDateFmt.format(j.publishedAt) : "Draft"}
+                    {j.publishedAt ? journalDateFmt.format(j.publishedAt) : t.common.draft}
                   </span>
                   <div>
                     <h3 className="text-lg font-semibold tracking-tight group-hover:text-primary sm:text-xl">
@@ -400,7 +380,7 @@ export default async function HomePage() {
                     </p>
                   </div>
                   <span className="hidden items-center gap-3 font-mono text-xs text-muted-foreground sm:flex">
-                    {j.readingMinutes} mnt
+                    {j.readingMinutes} {t.common.menit}
                     <ArrowRight className="h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
                   </span>
                 </Link>
@@ -409,8 +389,8 @@ export default async function HomePage() {
           )}
           <div className="mt-10 flex justify-end">
             <Button asChild variant="outline" className="rounded-full px-7">
-              <Link href="/journal">
-                Semua artikel
+              <Link href={localePrefix(locale, "/journal")}>
+                {t.home.allArticles}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>

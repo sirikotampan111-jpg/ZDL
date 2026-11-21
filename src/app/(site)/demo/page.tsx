@@ -4,27 +4,32 @@ import { CtaSection } from "@/components/site/cta-section";
 import { DemoFilterGrid } from "@/components/site/demo-filter-grid";
 import { getPublishedDemos } from "@/lib/queries";
 import { site } from "@/lib/site";
+import { getI18n } from "@/i18n/server";
+import { fmt, localePrefix } from "@/i18n/config";
 
-// Content is CMS-managed — cached via ISR and revalidated on-demand
-// when demo entries change through the admin API (see src/app/api/admin/demo).
-// Category filtering is client-side (instant) so this page stays cached.
+// Content is CMS-managed. Category filtering is client-side (instant).
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: "Demo — Coba Langsung Sistem yang Kami Bangun",
-  description:
-    "Wadah demo interaktif ZDL: coba langsung simulasi aplikasi kasir, sistem booking, dashboard, dan sistem lain yang bisa kami bangun untuk bisnis Anda — tanpa perlu daftar atau install apa pun.",
-  alternates: { canonical: "/demo" },
-  openGraph: {
-    title: "Demo ZDL — Zheng Digital Lab",
-    description:
-      "Coba langsung simulasi aplikasi yang bisa kami bangun: kasir, booking, dashboard, dan lainnya. Semua berjalan di browser, tanpa install.",
-    url: `${site.url}/demo`,
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return {
+    title: t.demo.metaTitle,
+    description: t.demo.metaDesc,
+    alternates: {
+      canonical: "/demo",
+      languages: { "id-ID": "/demo", en: "/en/demo", "x-default": "/demo" },
+    },
+    openGraph: {
+      title: t.demo.ogTitle,
+      description: t.demo.ogDesc,
+      url: `${site.url}/demo`,
+      type: "website",
+    },
+  };
+}
 
 export default async function DemoPage() {
+  const { locale, t } = await getI18n();
   const demos = await getPublishedDemos();
 
   // Distinct free-text categories → filter chips (sorted alphabetically)
@@ -41,8 +46,10 @@ export default async function DemoPage() {
   const demoCards = demos.map((d) => ({
     id: d.id,
     title: d.title,
+    titleEn: d.titleEn,
     slug: d.slug,
     description: d.description,
+    descriptionEn: d.descriptionEn,
     thumbnail: d.thumbnail,
     category: d.category,
     accessType: d.accessType,
@@ -52,29 +59,33 @@ export default async function DemoPage() {
   return (
     <>
       <PageHero
-        breadcrumb={[{ name: "Demo" }]}
-        eyebrow="Wadah demo"
+        breadcrumb={[{ name: locale === "en" ? "Demos" : "Demo" }]}
+        eyebrow={t.demo.heroEyebrow}
         title={
           <>
-            Jangan cuma baca —{" "}
+            {t.demo.heroTitlePre}{" "}
             <span className="font-serif-accent font-normal text-primary">
-              coba langsung
+              {t.demo.heroTitleAccent}
             </span>
           </>
         }
-        description="Setiap demo di halaman ini adalah simulasi berfungsi penuh dari sistem yang sering kami bangun untuk klien — kasir, payroll, stok gudang, booking, katalog pesan WhatsApp. Semua jalan di browser, tanpa daftar dan tanpa install."
-        meta={[`${demos.length} simulasi interaktif`, "Gratis", "Cocok dibuka dari HP"]}
+        description={t.demo.heroDesc}
+        meta={[
+          fmt(t.demo.metaCount, { n: demos.length }),
+          t.demo.metaFree,
+          t.demo.metaMobile,
+        ]}
       />
 
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-        <DemoFilterGrid categories={categoryChips} demos={demoCards} />
+        <DemoFilterGrid categories={categoryChips} demos={demoCards} locale={locale} />
       </section>
 
       <CtaSection
-        title="Mau sistem seperti ini untuk bisnis Anda?"
-        description="Demo di halaman ini adalah simulasi ringan. Versi aslinya dibuat sesuai kebutuhan bisnis Anda — lengkap dengan data, laporan, dan integrasi yang Anda mau."
-        secondaryLabel="Lihat layanan kami"
-        secondaryHref="/services"
+        title={t.demo.ctaTitle}
+        description={t.demo.ctaDesc}
+        secondaryLabel={t.demo.ctaSecondary}
+        secondaryHref={localePrefix(locale, "/services")}
       />
     </>
   );

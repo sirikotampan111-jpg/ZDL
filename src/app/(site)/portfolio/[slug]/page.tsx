@@ -18,6 +18,9 @@ import { CtaSection } from "@/components/site/cta-section";
 import { getPortfolioBySlug, getPublishedPortfolios } from "@/lib/queries";
 import { parseJsonArray } from "@/lib/markdown";
 import { waLink, site } from "@/lib/site";
+import { getI18n } from "@/i18n/server";
+import { fmt, localePrefix } from "@/i18n/config";
+import { pickDescription, pickTitle } from "@/i18n/content";
 
 // Content is CMS-managed — cached via ISR and revalidated on-demand
 // when content changes through the admin API (see src/app/api/admin/*).
@@ -35,15 +38,23 @@ export async function generateMetadata(
   const item = await getPortfolioBySlug(slug);
   if (!item) return {};
 
-  const title = item.seoTitle || `${item.title} — Studi Kasus Project`;
+  const { locale, t } = await getI18n();
+  const title = pickTitle(item, locale);
   const description =
-    item.seoDescription ||
-    `${item.description.slice(0, 150)}…`;
+    (locale === "en" && item.descriptionEn ? item.descriptionEn : item.description).slice(0, 150) +
+    "…";
 
   return {
-    title,
+    title: item.seoTitle || fmt(t.portfolioDetail.seoTitle, { name: title }),
     description,
-    alternates: { canonical: `/portfolio/${item.slug}` },
+    alternates: {
+      canonical: `/portfolio/${item.slug}`,
+      languages: {
+        "id-ID": `/portfolio/${item.slug}`,
+        en: `/en/portfolio/${item.slug}`,
+        "x-default": `/portfolio/${item.slug}`,
+      },
+    },
     openGraph: {
       title,
       description,
@@ -66,9 +77,12 @@ export default async function PortfolioDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const { locale, t } = await getI18n();
   const item = await getPortfolioBySlug(slug);
   if (!item) notFound();
 
+  const title = pickTitle(item, locale);
+  const description = pickDescription(item, locale);
   const techs = parseJsonArray(item.technologies);
   const all = await getPublishedPortfolios();
   const related = all
@@ -80,8 +94,8 @@ export default async function PortfolioDetailPage({
   const creativeWorkJsonLd = {
     "@context": "https://schema.org",
     "@type": "CreativeWork",
-    name: item.title,
-    description: item.seoDescription || item.description,
+    name: title,
+    description: item.seoDescription || description,
     url: `${site.url}/portfolio/${item.slug}`,
     image: item.thumbnail ? `${site.url}${item.thumbnail}` : undefined,
     dateCreated: item.year ? String(item.year) : undefined,
@@ -99,11 +113,11 @@ export default async function PortfolioDetailPage({
       <article className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <Breadcrumb
           items={[
-            { name: "Portfolio", href: "/portfolio" },
+            { name: "Portfolio", href: localePrefix(locale, "/portfolio") },
             ...(item.category
-              ? [{ name: item.category.name, href: `/portfolio?kategori=${item.category.slug}` }]
+              ? [{ name: item.category.name, href: localePrefix(locale, "/portfolio") }]
               : []),
-            { name: item.title },
+            { name: title },
           ]}
         />
 
@@ -129,7 +143,7 @@ export default async function PortfolioDetailPage({
             )}
           </div>
           <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
-            {item.title}
+            {title}
           </h1>
         </header>
 
@@ -138,7 +152,7 @@ export default async function PortfolioDetailPage({
           <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-2xl border border-border bg-muted">
             <Image
               src={item.thumbnail}
-              alt={`Tampilan project ${item.title}`}
+              alt={fmt(t.portfolioDetail.viewAlt, { name: title })}
               fill
               priority
               sizes="(max-width: 1152px) 100vw, 1152px"
@@ -150,9 +164,9 @@ export default async function PortfolioDetailPage({
         {/* Body */}
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_320px]">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight">Tentang project</h2>
+            <h2 className="text-xl font-semibold tracking-tight">{t.portfolioDetail.about}</h2>
             <div className="mt-4 space-y-4 text-base leading-relaxed text-muted-foreground">
-              {item.description.split("\n\n").map((para, i) => (
+              {description.split("\n\n").map((para, i) => (
                 <p key={i}>{para}</p>
               ))}
             </div>
@@ -160,7 +174,7 @@ export default async function PortfolioDetailPage({
             {/* Gallery */}
             {item.images.length > 0 && (
               <div className="mt-10">
-                <h2 className="text-xl font-semibold tracking-tight">Galeri</h2>
+                <h2 className="text-xl font-semibold tracking-tight">{t.portfolioDetail.gallery}</h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   {item.images.map((img) => (
                     <div
@@ -169,7 +183,7 @@ export default async function PortfolioDetailPage({
                     >
                       <Image
                         src={img.url}
-                        alt={img.alt || `Galeri project ${item.title}`}
+                        alt={img.alt || fmt(t.portfolioDetail.galleryAlt, { name: title })}
                         fill
                         loading="lazy"
                         sizes="(max-width: 640px) 100vw, 50vw"
@@ -187,16 +201,16 @@ export default async function PortfolioDetailPage({
             <div className="rounded-2xl border border-border bg-card p-6">
               <h3 className="flex items-center gap-2 font-semibold">
                 <Layers className="h-4 w-4 text-primary" />
-                Teknologi
+                {t.portfolioDetail.tech}
               </h3>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {techs.length > 0 ? (
-                  techs.map((t) => (
+                  techs.map((tech) => (
                     <span
-                      key={t}
+                      key={tech}
                       className="rounded-md bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground"
                     >
-                      {t}
+                      {tech}
                     </span>
                   ))
                 ) : (
@@ -207,19 +221,25 @@ export default async function PortfolioDetailPage({
               <dl className="mt-6 space-y-3 border-t border-border pt-5 text-sm">
                 {item.client && (
                   <div>
-                    <dt className="text-xs uppercase tracking-wider text-muted-foreground">Klien</dt>
+                    <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+                      {t.portfolioDetail.client}
+                    </dt>
                     <dd className="mt-0.5 font-medium">{item.client}</dd>
                   </div>
                 )}
                 {item.year && (
                   <div>
-                    <dt className="text-xs uppercase tracking-wider text-muted-foreground">Tahun</dt>
+                    <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+                      {t.portfolioDetail.year}
+                    </dt>
                     <dd className="mt-0.5 font-medium">{item.year}</dd>
                   </div>
                 )}
                 {item.category && (
                   <div>
-                    <dt className="text-xs uppercase tracking-wider text-muted-foreground">Kategori</dt>
+                    <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+                      {t.portfolioDetail.category}
+                    </dt>
                     <dd className="mt-0.5 font-medium">{item.category.name}</dd>
                   </div>
                 )}
@@ -230,7 +250,7 @@ export default async function PortfolioDetailPage({
                   <Button asChild className="w-full rounded-full bg-primary text-primary-foreground">
                     <a href={item.projectUrl} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="mr-2 h-4 w-4" />
-                      Lihat live project
+                      {t.portfolioDetail.viewLive}
                     </a>
                   </Button>
                 )}
@@ -238,28 +258,28 @@ export default async function PortfolioDetailPage({
                   <Button asChild variant="outline" className="w-full rounded-full">
                     <a href={item.githubUrl} target="_blank" rel="noopener noreferrer">
                       <Github className="mr-2 h-4 w-4" />
-                      Source code
+                      {t.portfolioDetail.sourceCode}
                     </a>
                   </Button>
                 )}
                 <Button asChild variant="outline" className="w-full rounded-full">
                   <a
-                    href={waLink(`Halo ZDL, saya melihat project "${item.title}" di portfolio. Saya ingin membangun project serupa.`)}
+                    href={waLink(fmt(t.portfolioDetail.waMsg, { name: title }))}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Bangun project serupa
+                    {t.portfolioDetail.buildSimilar}
                   </a>
                 </Button>
               </div>
             </div>
 
             <Link
-              href="/portfolio"
+              href={localePrefix(locale, "/portfolio")}
               className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary"
             >
               <ArrowLeft className="h-4 w-4" />
-              Kembali ke portfolio
+              {t.portfolioDetail.back}
             </Link>
           </aside>
         </div>
@@ -268,18 +288,18 @@ export default async function PortfolioDetailPage({
         {relatedItems.length > 0 && (
           <section className="mt-16 border-t border-border pt-12">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold tracking-tight">Project terkait</h2>
+              <h2 className="text-2xl font-bold tracking-tight">{t.portfolioDetail.related}</h2>
               <Link
-                href="/portfolio"
+                href={localePrefix(locale, "/portfolio")}
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
               >
-                Semua portfolio
+                {t.portfolioDetail.viewAll}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
             <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {relatedItems.map((p) => (
-                <PortfolioCard key={p.id} item={p} />
+                <PortfolioCard key={p.id} item={p} locale={locale} />
               ))}
             </div>
           </section>
@@ -287,10 +307,10 @@ export default async function PortfolioDetailPage({
       </article>
 
       <CtaSection
-        title="Tertarik membangun project seperti ini?"
-        description="Ceritakan kebutuhan bisnis Anda — kami bantu dari perencanaan hingga deployment, dengan proses yang jelas di setiap tahapnya."
-        secondaryLabel="Pelajari layanan kami"
-        secondaryHref="/services"
+        title={t.portfolioDetail.ctaTitle}
+        description={t.portfolioDetail.ctaDesc}
+        secondaryLabel={t.portfolioDetail.ctaSecondary}
+        secondaryHref={localePrefix(locale, "/services")}
       />
     </>
   );
